@@ -396,7 +396,7 @@
 </footer>
 <!-- Chatbot UI begin -->
 <div id="chatbot-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-body">
-    <div id="chat-window" class="hidden w-80 mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[400px]">
+    <div id="chat-window" class="hidden w-[360px] max-w-[90vw] mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[550px] max-h-[80vh]">
         <div class="bg-primary text-on-primary p-4 flex justify-between items-center" style="background-color: #C05C3F;">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-lg">smart_toy</span>
@@ -424,7 +424,7 @@
         <div class="px-3 pb-3 bg-surface">
             <form id="chat-form" class="flex gap-2">
                 <input id="chat-input" type="text" placeholder="Gửi tin nhắn..." class="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-colors text-sm text-on-background" required>
-                <button type="submit" class="bg-primary text-on-primary w-10 h-10 rounded-xl hover:opacity-90 flex items-center justify-center transition-all bg-[#C05C3F]" style="background-color: #C05C3F;">
+                <button type="submit" class="flex-shrink-0 bg-primary text-on-primary w-10 h-10 rounded-xl hover:opacity-90 flex items-center justify-center transition-all bg-[#C05C3F]" style="background-color: #C05C3F;">
                     <span class="material-symbols-outlined text-sm">send</span>
                 </button>
             </form>
@@ -463,10 +463,10 @@
     closeChat.addEventListener('click', toggleChat);
 
     function formatMarkdown(text) {
-        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #C05C3F;">$1</strong>');
         html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        html = html.replace(/- (.*)/g, '<div class="ml-2 mt-1 flex items-start gap-1"><span class="material-symbols-outlined text-[10px] mt-1">circle</span> $1</div>');
-        html = html.replace(/(\d+)\. (.*)/g, '<div class="ml-1 mt-1"><strong>$1.</strong> $2</div>');
+        html = html.replace(/- (.*)/g, '<div style="display: flex; gap: 8px; margin-top: 6px;"><span class="material-symbols-outlined text-[8px] mt-1.5 opacity-60">circle</span><span style="flex: 1;">$1</span></div>');
+        html = html.replace(/(\d+)\. (.*)/g, '<div style="display: flex; gap: 6px; margin-top: 6px;"><span style="color: #C05C3F; font-weight: bold; min-width: 14px;">$1.</span><span style="flex: 1;">$2</span></div>');
         html = html.replace(/\n\n/g, '<br><br>');
         html = html.replace(/\n/g, '<br>');
         return html;
