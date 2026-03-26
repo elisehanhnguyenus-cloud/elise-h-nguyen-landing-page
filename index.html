@@ -394,4 +394,122 @@
 </div>
 </div>
 </footer>
+<!-- Chatbot UI begin -->
+<div id="chatbot-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-body">
+    <div id="chat-window" class="hidden w-80 mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[400px]">
+        <div class="bg-primary text-on-primary p-4 flex justify-between items-center" style="background-color: #C05C3F;">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">smart_toy</span>
+                <span class="font-headline font-bold text-sm tracking-wider">Elise AI Assistant</span>
+            </div>
+            <button id="close-chat" class="hover:opacity-70 transition-opacity">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-surface-container-lowest text-sm font-light">
+            <div class="flex items-start gap-2">
+                <div class="bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
+                    Xin chào! Tôi là trợ lý ảo của Elise. Tôi có thể giúp gì cho bạn hôm nay?
+                </div>
+            </div>
+        </div>
+        <div class="p-3 bg-surface border-t border-outline-variant/10">
+            <form id="chat-form" class="flex gap-2">
+                <input id="chat-input" type="text" placeholder="Gửi tin nhắn..." class="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-colors text-sm text-on-background" required>
+                <button type="submit" class="bg-primary text-on-primary w-10 h-10 rounded-xl hover:opacity-90 flex items-center justify-center transition-all bg-[#C05C3F]" style="background-color: #C05C3F;">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <button id="chat-toggle" class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform" style="background-color: #C05C3F;">
+        <span class="material-symbols-outlined text-2xl" id="chat-icon">chat</span>
+    </button>
+</div>
+
+<script>
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatWindow = document.getElementById('chat-window');
+    const closeChat = document.getElementById('close-chat');
+    const chatIcon = document.getElementById('chat-icon');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    let isOpen = false;
+
+    function toggleChat() {
+        isOpen = !isOpen;
+        if (isOpen) {
+            chatWindow.classList.remove('hidden');
+            chatWindow.classList.add('flex');
+            chatIcon.innerText = 'keyboard_arrow_down';
+        } else {
+            chatWindow.classList.add('hidden');
+            chatWindow.classList.remove('flex');
+            chatIcon.innerText = 'chat';
+        }
+    }
+
+    chatToggle.addEventListener('click', toggleChat);
+    closeChat.addEventListener('click', toggleChat);
+
+    function addMessage(text, isUser = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = isUser 
+            ? 'bg-primary text-on-primary p-3 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm' 
+            : 'bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm';
+        if (isUser) bubble.style.backgroundColor = '#C05C3F';
+        bubble.textContent = text;
+        
+        msgDiv.appendChild(bubble);
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+
+        addMessage(msg, true);
+        chatInput.value = '';
+        chatInput.disabled = true;
+
+        const typingId = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.className = 'text-surface-variant italic font-light text-xs mt-1 ml-2';
+        typingDiv.textContent = 'Đang trả lời...';
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+
+            const data = await response.json();
+            document.getElementById(typingId).remove();
+
+            if (response.ok) {
+                addMessage(data.reply, false);
+            } else {
+                addMessage('Xin lỗi, có lỗi xảy ra: ' + (data.message || 'Lỗi hệ thống'), false);
+            }
+        } catch (error) {
+            document.getElementById(typingId).remove();
+            addMessage('Xin lỗi, không thể kết nối tới máy chủ.', false);
+        } finally {
+            chatInput.disabled = false;
+            chatInput.focus();
+        }
+    });
+</script>
+<!-- Chatbot UI end -->
 </body></html>
