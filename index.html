@@ -413,7 +413,15 @@
                 </div>
             </div>
         </div>
-        <div class="p-3 bg-surface border-t border-outline-variant/10">
+        <div class="pt-3 px-3 pb-1 bg-surface border-t border-outline-variant/10 flex gap-2 overflow-x-auto" style="scrollbar-width: none;">
+            <button type="button" onclick="openCalendar()" class="flex-shrink-0 bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-full text-xs font-bold uppercase hover:bg-primary/20 transition-all flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">event</span> Đặt lịch
+            </button>
+            <button type="button" onclick="quickAsk('Cho tôi biết về dịch vụ của bạn')" class="flex-shrink-0 bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1.5 rounded-full text-xs font-bold uppercase hover:bg-secondary/20 transition-all flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">work</span> Dịch vụ
+            </button>
+        </div>
+        <div class="px-3 pb-3 bg-surface">
             <form id="chat-form" class="flex gap-2">
                 <input id="chat-input" type="text" placeholder="Gửi tin nhắn..." class="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-colors text-sm text-on-background" required>
                 <button type="submit" class="bg-primary text-on-primary w-10 h-10 rounded-xl hover:opacity-90 flex items-center justify-center transition-all bg-[#C05C3F]" style="background-color: #C05C3F;">
@@ -454,16 +462,47 @@
     chatToggle.addEventListener('click', toggleChat);
     closeChat.addEventListener('click', toggleChat);
 
-    function addMessage(text, isUser = false) {
+    function formatMarkdown(text) {
+        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        html = html.replace(/- (.*)/g, '<div class="ml-2 mt-1 flex items-start gap-1"><span class="material-symbols-outlined text-[10px] mt-1">circle</span> $1</div>');
+        html = html.replace(/(\d+)\. (.*)/g, '<div class="ml-1 mt-1"><strong>$1.</strong> $2</div>');
+        html = html.replace(/\n\n/g, '<br><br>');
+        html = html.replace(/\n/g, '<br>');
+        return html;
+    }
+
+    function openCalendar() {
+        if (!isOpen) toggleChat();
+        addMessage(`Để đặt lịch hẹn với Elise, bạn vui lòng chọn khung thời gian phù hợp thông qua Lịch dưới đây nhé:<br><br>
+        <a href="https://calendly.com/" target="_blank" class="inline-flex items-center justify-center gap-2 bg-primary text-on-primary w-full py-3 rounded-xl text-sm font-bold uppercase tracking-widest hover:opacity-90 shadow-lg" style="background-color: #C05C3F; text-decoration: none;">
+            <span class="material-symbols-outlined">edit_calendar</span> Chọn ngày giờ
+        </a>`, false, true);
+    }
+
+    function quickAsk(question) {
+        if (!isOpen) toggleChat();
+        chatInput.value = question;
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+
+    function addMessage(text, isUser = false, isHtml = false) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`;
         
         const bubble = document.createElement('div');
         bubble.className = isUser 
-            ? 'bg-primary text-on-primary p-3 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm' 
-            : 'bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm';
+            ? 'bg-primary text-on-primary p-3 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm shadow-sm' 
+            : 'bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm shadow-sm';
         if (isUser) bubble.style.backgroundColor = '#C05C3F';
-        bubble.textContent = text;
+        
+        if (isHtml) {
+            bubble.innerHTML = text;
+        } else if (isUser) {
+            bubble.textContent = text;
+        } else {
+            bubble.innerHTML = formatMarkdown(text);
+        }
         
         msgDiv.appendChild(bubble);
         chatMessages.appendChild(msgDiv);
