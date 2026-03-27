@@ -1,6 +1,7 @@
 {
   "name": "elise-landing",
   "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "openai": "^4.28.0"
   }
