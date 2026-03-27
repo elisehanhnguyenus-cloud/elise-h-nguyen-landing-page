@@ -10,19 +10,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { message } = req.body;
+  const { message, lead } = req.body;
 
   if (!message) {
     return res.status(400).json({ message: 'Message is required' });
   }
 
-    try {
-        const stream = await openai.chat.completions.create({
-            model: "ces-chatbot-gpt-5.4",
-            messages: [
-                { 
-                    role: "system", 
-                    content: `BẠN LÀ KAT - TRỢ LÝ CHIẾN LƯỢC (Concierge Advisor) của Elise Hạnh Nguyễn.
+  const userInfo = lead ? `\n\nKHÁCH HÀNG: ${lead.name || 'Bạn'} - Email: ${lead.email || 'N/A'}` : '';
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model: "ces-chatbot-gpt-5.4",
+      messages: [
+        { 
+          role: "system", 
+          content: `BẠN LÀ KAT - TRỢ LÝ CHIẾN LƯỢC (Concierge Advisor) của Elise Hạnh Nguyễn.${userInfo}
 
 TRỤ CỘT CHUYÊN MÔN (LUÔN TRÌNH BÀY DẠNG DANH SÁCH ĐÁNH SỐ):
 1. **Strategy & Go Global** (Tư vấn & Chiến lược): Hỗ trợ Solo-entrepreneur, xưởng thủ công nhỏ lẻ và doanh nghiệp SME vươn tầm quốc tế.
@@ -35,34 +37,27 @@ QUY TẮC CỐ VẤN:
 - ĐỊNH DẠNG: Sử dụng [FOLDER] cho chi tiết dài, [BREAK] để chia bong bóng chat, [BTN:Label] cho lựa chọn tiếp theo.
 - LƯU TRỮ: Khi có đủ info quan trọng, gửi [SAVE_TO_NOTION:{"summary": "...", "niche": "...", "priority": "..."}].
 - PHONG CÁCH: Thông minh, tinh tế, sắc sảo.`
+        },
+        { role: "user", content: message }
+      ],
+      stream: true,
+    });
 
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
 
-
-
-
-
-
-                },
-                { role: "user", content: message }
-            ],
-            stream: true,
-        });
-
-        res.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-        });
-
-        for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-                res.write(`data: ${JSON.stringify({ content })}\n\n`);
-            }
-        }
-        res.end();
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) {
+        res.write(`data: ${JSON.stringify({ content })}\n\n`);
+      }
     }
+    res.end();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
 }

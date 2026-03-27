@@ -921,36 +921,36 @@
 
             addBubble(msg, true);
             refs.input.value = '';
-            refs.input.disabled = true;
-            refs.submit.disabled = true;
+            refs.input.style.height = 'auto'; // Reset height for textarea if it was one
 
-            const tId = 'typing-' + Date.now();
-            const tDiv = document.createElement('div');
-            tDiv.id = tId;
-            tDiv.className = 'flex items-start gap-2 mb-4 bubble-in';
-            tDiv.innerHTML = `<div class="bg-white p-3 rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-0.5">
-                <span class="typing-dot"></span><span class="typing-dot" style="animation-delay: 0.2s"></span><span class="typing-dot" style="animation-delay: 0.4s"></span>
-            </div>`;
-            refs.messages.appendChild(tDiv);
+            const tId = 't-' + Date.now();
+            const typing = document.createElement('div');
+            typing.id = tId;
+            typing.className = 'flex justify-start mb-4 animate-pulse';
+            typing.innerHTML = '<div class="bg-white/50 p-3 rounded-2xl flex gap-1"><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span></div>';
+            refs.messages.appendChild(typing);
             refs.messages.scrollTop = refs.messages.scrollHeight;
 
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg })
+                    body: JSON.stringify({ 
+                        message: msg, // Original message
+                        lead: JSON.parse(localStorage.getItem('kat-lead') || '{}')
+                    })
                 });
 
-                document.getElementById(tId)?.remove();
-                if (!res.ok) throw new Error('API Error');
+                if (!res.ok) throw new Error('Network error');
 
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
-                let buffer = "";
-                let aiBubble = addBubble("", false, true);
+                let aiBubble = null;
+                let buffer = '';
+                let hasReceivedContent = false; // Flag to track if content has started arriving
 
                 while (true) {
-                    const { value, done } = await reader.read();
+                    const { done, value } = await reader.read();
                     if (done) break;
                     
                     const chunk = decoder.decode(value);
@@ -959,36 +959,42 @@
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {
-                                const parsed = JSON.parse(line.substring(6));
-                                let content = parsed.choices[0]?.delta?.content || "";
+                                const data = JSON.parse(line.slice(6));
+                                let content = data.content || '';
                                 
-                                // Automatic Notion Lead Capture
-                                if (content.includes('[SAVE_TO_NOTION:')) {
-                                    const match = content.match(/\[SAVE_TO_NOTION:(.*?)\]/);
-                                    if (match) {
-                                        try {
-                                            const data = JSON.parse(match[1]);
+                                if (content) {
+                                    if (!hasReceivedContent) {
+                                        document.getElementById(tId)?.remove();
+                                        aiBubble = addBubble("", false, true);
+                                        hasReceivedContent = true;
+                                    }
+
+                                    // Check for Notion Tags
+                                    if (content.includes('[SAVE_TO_NOTION:')) {
+                                        const match = content.match(/\[SAVE_TO_NOTION:(.*?)\]/);
+                                        if (match) {
+                                            const lead = JSON.parse(localStorage.getItem('kat-lead') || '{}');
                                             fetch('/api/leads', {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ ...data, isChatSummary: true })
-                                            });
+                                                body: JSON.stringify({ ...lead, message: match[1], isChatSummary: true })
+                                            }).catch(() => {});
                                             content = content.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
-                                        } catch (e) {}
+                                        }
                                     }
-                                }
 
-                                buffer += content;
-                                if (buffer.includes('[BREAK]')) {
-                                    const parts = buffer.split('[BREAK]');
-                                    aiBubble.innerHTML = formatContent(parts[0].trim());
-                                    buffer = parts.slice(1).join('[BREAK]').trim();
-                                    if (!done) aiBubble = addBubble("", false, true);
-                                } else {
-                                    if (buffer.trim()) aiBubble.innerHTML = formatContent(buffer);
+                                    buffer += content;
+                                    if (buffer.includes('[BREAK]')) {
+                                        const parts = buffer.split('[BREAK]');
+                                        aiBubble.innerHTML = formatContent(parts[0].trim());
+                                        buffer = parts.slice(1).join('[BREAK]').trim();
+                                        if (!done) aiBubble = addBubble("", false, true);
+                                    } else {
+                                        if (buffer.trim()) aiBubble.innerHTML = formatContent(buffer);
+                                    }
+                                    refs.messages.scrollTop = refs.messages.scrollHeight;
                                 }
-                                refs.messages.scrollTop = refs.messages.scrollHeight;
-                            } catch (e) {}
+                            } catch (e) { /* console.error("Error parsing SSE data:", e); */ }
                         }
                     }
                 }
