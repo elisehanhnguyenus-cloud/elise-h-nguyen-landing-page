@@ -558,4 +558,68 @@
     });
 </script>
 <!-- Chatbot UI end -->
+
+<!-- Custom Animated Cursor -->
+<style>
+    @media (pointer: fine) {
+        body, a, button, input, textarea, select, [role="button"] {
+            cursor: none !important;
+        }
+    }
+</style>
+<script>
+    if (window.matchMedia("(pointer: fine)").matches) {
+        const cursorDot = document.createElement('div');
+        cursorDot.className = 'fixed top-0 left-0 w-1.5 h-1.5 bg-primary rounded-full pointer-events-none z-[10000] mix-blend-multiply transition-transform duration-100 ease-out';
+        cursorDot.style.transform = 'translate(-50%, -50%)';
+        
+        const cursorOutline = document.createElement('div');
+        cursorOutline.className = 'fixed top-0 left-0 w-8 h-8 border border-primary rounded-full pointer-events-none z-[9999] opacity-60 transition-transform duration-300 ease-out';
+        cursorOutline.style.transform = 'translate(-50%, -50%)';
+
+        document.body.appendChild(cursorDot);
+        document.body.appendChild(cursorOutline);
+
+        let mouseX = 0, mouseY = 0;
+        let outlineX = 0, outlineY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Dot follows exactly immediately
+            cursorDot.style.left = `${mouseX}px`;
+            cursorDot.style.top = `${mouseY}px`;
+        });
+
+        // Loop for outline spring delay effect
+        function animateOutline() {
+            let dx = mouseX - outlineX;
+            let dy = mouseY - outlineY;
+            
+            outlineX += dx * 0.18;
+            outlineY += dy * 0.18;
+            
+            cursorOutline.style.left = `${outlineX}px`;
+            cursorOutline.style.top = `${outlineY}px`;
+            
+            requestAnimationFrame(animateOutline);
+        }
+        animateOutline();
+
+        // Hover effects interactables
+        document.querySelectorAll('a, button, [role="button"], input, textarea, [data-icon]').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                cursorOutline.style.backgroundColor = 'rgba(192, 92, 63, 0.08)';
+                cursorDot.style.transform = 'translate(-50%, -50%) scale(0)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                cursorOutline.style.backgroundColor = 'transparent';
+                cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+    }
+</script>
 </body></html>
