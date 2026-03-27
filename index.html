@@ -803,10 +803,18 @@
 
     function formatMarkdown(text) {
         if (!text) return "";
-        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #C05C3F;">$1</strong>');
-        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        html = html.replace(/^- (.*)/gm, '<div style="margin-top: 4px; padding-left: 12px;">• $1</div>');
-        html = html.replace(/^(\d+)\. (.*)/gm, '<div style="margin-top: 4px; padding-left: 12px;">$1. $2</div>');
+        // Bôi đậm màu Elise
+        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #C05C3F; font-weight: 700;">$1</strong>');
+        // In nghiêng
+        html = html.replace(/\*(.*?)\*/g, '<em style="opacity: 0.9;">$1</em>');
+        // Gạch chân / Highlight
+        html = html.replace(/__(.*?)__/g, '<span style="border-bottom: 2px solid #C05C3F; padding-bottom: 1px;">$1</span>');
+        // Đầu mục
+        html = html.replace(/^- (.*)/gm, '<div style="margin-top: 6px; padding-left: 12px; display: flex; gap: 8px;"><span>•</span><span>$1</span></div>');
+        html = html.replace(/^(\d+)\. (.*)/gm, '<div style="margin-top: 8px; font-weight: 600; color: #C05C3F;">$1. $2</div>');
+        // Tiêu đề
+        html = html.replace(/### (.*)/g, '<div style="font-family: \'Playfair Display\', serif; font-size: 1.1rem; font-weight: 700; margin-top: 16px; color: #1a1a1a;">$1</div>');
+        
         html = html.replace(/\n\n/g, '<br><br>');
         html = html.replace(/\n/g, '<br>');
         return html;
@@ -828,12 +836,12 @@
 
     function addMessage(text, isUser = false, isHtml = false) {
         const msgDiv = document.createElement('div');
-        msgDiv.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`;
+        msgDiv.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`;
         
         const bubble = document.createElement('div');
         bubble.className = isUser 
-            ? 'bg-primary text-on-primary p-3 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm shadow-sm' 
-            : 'bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm shadow-sm';
+            ? 'bg-primary text-on-primary p-4 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm shadow-md' 
+            : 'bg-white text-[#333] p-4 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm shadow-sm border border-outline-variant/10';
         if (isUser) bubble.style.backgroundColor = '#C05C3F';
         
         if (isHtml) {
@@ -860,13 +868,13 @@
         const typingId = 'typing-' + Date.now();
         const typingDiv = document.createElement('div');
         typingDiv.id = typingId;
-        typingDiv.className = 'text-surface-variant italic font-light text-xs mt-1 ml-2';
+        typingDiv.className = 'text-surface-variant italic font-light text-[10px] mt-1 ml-2 opacity-60';
         typingDiv.textContent = 'Elise đang viết...';
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         let aiBubble = null;
-        let fullContent = "";
+        let fullBuffer = "";
 
         try {
             const response = await fetch('/api/chat', {
@@ -881,7 +889,7 @@
             const decoder = new TextDecoder();
             
             document.getElementById(typingId).remove();
-            aiBubble = addMessage("", false); // Create empty bubble for streaming
+            aiBubble = addMessage("", false); 
 
             while (true) {
                 const { value, done } = await reader.read();
@@ -894,9 +902,19 @@
                     if (line.startsWith('data: ')) {
                         try {
                             const data = JSON.parse(line.substring(6));
-                            fullContent += data.content;
-                            // Update bubble text with smooth formatting
-                            aiBubble.innerHTML = formatMarkdown(fullContent);
+                            fullBuffer += data.content;
+                            
+                            if (fullBuffer.includes('[BREAK]')) {
+                                const parts = fullBuffer.split('[BREAK]');
+                                aiBubble.innerHTML = formatMarkdown(parts[0].trim());
+                                fullBuffer = parts.slice(1).join('[BREAK]').trim();
+                                if (fullBuffer || !done) {
+                                    await new Promise(r => setTimeout(r, 600)); 
+                                    aiBubble = addMessage("", false);
+                                }
+                            } else {
+                                aiBubble.innerHTML = formatMarkdown(fullBuffer);
+                            }
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         } catch (e) {}
                     }
