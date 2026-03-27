@@ -62,7 +62,7 @@
 <a class="text-on-surface-variant hover:text-primary transition-colors font-label tracking-tight text-sm uppercase" href="#portfolio">Portfolio</a>
 <a class="text-on-surface-variant hover:text-primary transition-colors font-label tracking-tight text-sm uppercase" href="#partners">Đối tác</a>
 <a class="text-on-surface-variant hover:text-primary transition-colors font-label tracking-tight text-sm uppercase" href="#blog">Blog</a>
-<a href="https://notion.so/3308ed608af980e09049fd7bae9641d0" class="bg-primary text-on-primary px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-wider hover:opacity-90 transition-all hover:bg-[#a64d33] inline-block" style="background-color: #C05C3F;">Liên hệ</a>
+<a href="#contact" class="bg-primary text-on-primary px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-wider hover:opacity-90 transition-all hover:bg-[#a64d33] inline-block" style="background-color: #C05C3F;">Liên hệ</a>
 </div>
 </nav>
 <main>
@@ -95,7 +95,7 @@
 <span class="text-primary italic font-serif" style="font-size: 0.9em;">— Đan sự thật, dệt giá trị, kiến tạo bản sắc.</span>
 </p>
 <div class="flex flex-wrap gap-6 items-center">
-<a class="px-10 py-5 bg-primary text-on-primary rounded-xl font-bold uppercase tracking-widest text-sm hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 hover:bg-[#a64d33]" href="https://notion.so/3308ed608af980e09049fd7bae9641d0" style="background-color: #C05C3F;">
+<a class="px-10 py-5 bg-primary text-on-primary rounded-xl font-bold uppercase tracking-widest text-sm hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 hover:bg-[#a64d33]" href="#contact" style="background-color: #C05C3F;">
                                     Nhận giá trị
                                 </a>
 <a class="font-label text-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 group" href="#portfolio" style="">
@@ -670,16 +670,23 @@
                     <input id="email" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="jsmith@enterprise.com" type="email"/>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Inquiry Subject</label>
-                    <div class="relative">
-                        <select id="subject" class="w-full bg-white border-0 rounded-lg px-5 py-4 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
-                            <option>Strategic Brand Advisory</option>
-                            <option>Copywriting & Narrative</option>
-                            <option>Publishing & Editorial</option>
-                            <option>Other</option>
-                        </select>
-                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 pointer-events-none">expand_more</span>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Inquiry Subject</label>
+                        <div class="relative">
+                            <select id="subject" class="w-full bg-white border-0 rounded-lg px-5 py-4 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
+                                <option>Strategic Brand Advisory</option>
+                                <option>Copywriting & Narrative</option>
+                                <option>Publishing & Editorial</option>
+                                <option>Booking & Appointment</option>
+                                <option>Other</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 pointer-events-none">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Preferred Date & Time</label>
+                        <input id="bookingDate" class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background" type="datetime-local"/>
                     </div>
                 </div>
 
@@ -973,6 +980,7 @@
                     company: document.getElementById('company').value,
                     email: document.getElementById('email').value,
                     subject: document.getElementById('subject').value,
+                    bookingDate: document.getElementById('bookingDate').value,
                     message: document.getElementById('message').value
                 };
 

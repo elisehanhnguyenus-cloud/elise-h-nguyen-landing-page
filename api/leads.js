@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { fullName, email, company, subject, message } = req.body;
+  const { fullName, email, company, subject, bookingDate, message } = req.body;
   const NOTION_TOKEN = process.env.NOTION_SECRET;
   const DATABASE_ID = '3308ed608af980e09049fd7bae9641d0';
 
@@ -13,6 +13,31 @@ export default async function handler(req, res) {
   }
 
   try {
+    const properties = {
+      'Name': {
+        title: [{ text: { content: fullName || 'Anonymous' } }]
+      },
+      'Email': {
+        email: email || ''
+      },
+      'Company': {
+        rich_text: [{ text: { content: company || '' } }]
+      },
+      'Subject': {
+        select: { name: subject || 'Other' }
+      },
+      'Message': {
+        rich_text: [{ text: { content: message || '' } }]
+      }
+    };
+
+    // Add Date if provided
+    if (bookingDate) {
+      properties['Booking Date'] = {
+        date: { start: new Date(bookingDate).toISOString() }
+      };
+    }
+
     const response = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: {
@@ -22,23 +47,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         parent: { database_id: DATABASE_ID },
-        properties: {
-          'Name': {
-            title: [{ text: { content: fullName || 'Anonymous' } }]
-          },
-          'Email': {
-            email: email || ''
-          },
-          'Company': {
-            rich_text: [{ text: { content: company || '' } }]
-          },
-          'Subject': {
-            select: { name: subject || 'Other' }
-          },
-          'Message': {
-            rich_text: [{ text: { content: message || '' } }]
-          }
-        }
+        properties: properties
       }),
     });
 
