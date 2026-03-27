@@ -802,10 +802,11 @@
     closeChat.addEventListener('click', toggleChat);
 
     function formatMarkdown(text) {
+        if (!text) return "";
         let html = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #C05C3F;">$1</strong>');
         html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        html = html.replace(/- (.*)/g, '<div style="display: flex; gap: 8px; margin-top: 6px;"><span class="material-symbols-outlined text-[8px] mt-1.5 opacity-60">circle</span><span style="flex: 1;">$1</span></div>');
-        html = html.replace(/(\d+)\. (.*)/g, '<div style="display: flex; gap: 6px; margin-top: 6px;"><span style="color: #C05C3F; font-weight: bold; min-width: 14px;">$1.</span><span style="flex: 1;">$2</span></div>');
+        html = html.replace(/^- (.*)/gm, '<div style="margin-top: 4px; padding-left: 12px;">• $1</div>');
+        html = html.replace(/^(\d+)\. (.*)/gm, '<div style="margin-top: 4px; padding-left: 12px;">$1. $2</div>');
         html = html.replace(/\n\n/g, '<br><br>');
         html = html.replace(/\n/g, '<br>');
         return html;
@@ -837,51 +838,14 @@
         
         if (isHtml) {
             bubble.innerHTML = text;
-        } else if (isUser) {
-            bubble.textContent = text;
         } else {
-            // Typewriter effect for AI messages
-            const fullHtml = formatMarkdown(text);
-            bubble.innerHTML = '';
-            let i = 0;
-            const speed = 10; // Chữ chạy mượt
-            
-            // Temporary container to parse HTML properly while typing
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = fullHtml;
-            const nodes = Array.from(tempDiv.childNodes);
-            
-            msgDiv.appendChild(bubble);
-            chatMessages.appendChild(msgDiv);
-
-            async function typeNode(node) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const content = node.textContent;
-                    for (let char of content) {
-                        bubble.innerHTML += char;
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        await new Promise(r => setTimeout(r, speed));
-                    }
-                } else {
-                    const clone = node.cloneNode(false);
-                    bubble.appendChild(clone);
-                    for (let child of node.childNodes) {
-                        await typeNode(child);
-                    }
-                }
-            }
-
-            (async () => {
-                for (let node of nodes) {
-                    await typeNode(node);
-                }
-            })();
-            return; // Exit early as we added to DOM inside async
+            bubble.innerHTML = formatMarkdown(text);
         }
         
         msgDiv.appendChild(bubble);
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return bubble;
     }
 
     chatForm.addEventListener('submit', async (e) => {
@@ -897,9 +861,12 @@
         const typingDiv = document.createElement('div');
         typingDiv.id = typingId;
         typingDiv.className = 'text-surface-variant italic font-light text-xs mt-1 ml-2';
-        typingDiv.textContent = 'Elise đang suy nghĩ (80% Logic, 20% Zen)...';
+        typingDiv.textContent = 'Elise đang viết...';
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        let aiBubble = null;
+        let fullContent = "";
 
         try {
             const response = await fetch('/api/chat', {
@@ -908,17 +875,36 @@
                 body: JSON.stringify({ message: msg })
             });
 
-            const data = await response.json();
-            document.getElementById(typingId).remove();
+            if (!response.ok) throw new Error('Network error');
 
-            if (response.ok) {
-                addMessage(data.reply, false);
-            } else {
-                addMessage('Xin lỗi, có lỗi xảy ra: ' + (data.message || 'Lỗi hệ thống'), false);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            
+            document.getElementById(typingId).remove();
+            aiBubble = addMessage("", false); // Create empty bubble for streaming
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            fullContent += data.content;
+                            // Update bubble text with smooth formatting
+                            aiBubble.innerHTML = formatMarkdown(fullContent);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        } catch (e) {}
+                    }
+                }
             }
         } catch (error) {
-            document.getElementById(typingId).remove();
-            addMessage('Xin lỗi, không thể kết nối tới máy chủ.', false);
+            if (document.getElementById(typingId)) document.getElementById(typingId).remove();
+            addMessage('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
         } finally {
             chatInput.disabled = false;
             chatInput.focus();

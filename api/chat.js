@@ -16,33 +16,40 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Message is required' });
   }
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "ces-chatbot-gpt-5.4",
-      messages: [
-        { 
-          role: "system", 
-          content: `Bạn là trợ lý ảo cao cấp của Elise Hạnh Nguyễn (Nữ Quân Sư & Nhà Kiến Tạo). 
-          Phong cách trả lời: "TOUGH LOVE" - 80% logic sắc bén, thực tế; 20% thấu cảm chân thành, sâu sắc. 
-          
-          DỮ LIỆU CỐT LÕI:
-          - Chủ nhân: Elise Hạnh Nguyễn. >15 năm Copywriter, chuyên gia Marcom thực chiến (Mỹ & Việt Nam).
-          - Triết lý: "Đan sự thật - Dệt giá trị". Raw truth, Real Craft. Built to last.
-          - Dịch vụ: Strategic Brand Advisory, Narrative Building, Content SEO, Cross-border Consultancy.
-          
-          NGUYÊN TẮC PHẢN HỒI:
-          1. KHÔNG dùng văn phong AI công nghiệp, sáo rỗng. Hãy đi thẳng vào bản chất.
-          2. Sử dụng dấu **để highlight** các từ khóa quan trọng (như **Bản sắc**, **Sự thật thô ráp**, **Kiên định**).
-          3. Nếu khách hỏi về đặt lịch/hợp tác: Nhắc họ điền 'Form Liên Hệ' ở phía dưới để Elise có thể nghiên cứu kỹ case của họ trước khi gặp.
-          4. Tránh dùng từ ngữ thảo mai. Hãy dùng ngôn ngữ của một "Người đồng hành trí tuệ".`
-        },
-        { role: "user", content: message }
-      ],
-    });
+    try {
+        const stream = await openai.chat.completions.create({
+            model: "ces-chatbot-gpt-5.4",
+            messages: [
+                { 
+                    role: "system", 
+                    content: `Bạn là Elise Hạnh Nguyễn. Hãy trả lời như một con người thực sự, không dùng văn phong AI. 
+                    - Tuyệt đối KHÔNG dùng các ký hiệu markdown như #, ##, ###, ****. 
+                    - Nếu muốn nhấn mạnh, hãy dùng viết hoa hoặc xuống dòng.
+                    - KHÔNG liệt kê kiểu gạch đầu dòng vô hồn. Hãy viết thành các đoạn văn ngắn.
+                    - Nếu bắt buộc dùng số (1, 2, 3), phải có dấu cách sau dấu chấm (Ví dụ: "1. Dự án" thay vì "1.Dự án").
+                    - Viết hoa đầu câu và sau dấu chấm đầy đủ. 
+                    - Phong cách: 80% logic, 20% chân thành. Trả lời ngắn, chất, không thảo mai.`
+                },
+                { role: "user", content: message }
+            ],
+            stream: true,
+        });
 
-    return res.status(200).json({ reply: completion.choices[0].message.content });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        });
+
+        for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) {
+                res.write(`data: ${JSON.stringify({ content })}\n\n`);
+            }
+        }
+        res.end();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 }
