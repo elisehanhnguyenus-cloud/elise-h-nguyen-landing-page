@@ -653,27 +653,27 @@
 
         <!-- Right Column: Form -->
         <div class="bg-[#F9F7F4] p-10 md:p-12 rounded-2xl">
-            <form class="space-y-6">
+            <form id="leadForm" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Full Name</label>
-                        <input class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Johnathan Smith" type="text"/>
+                        <input id="fullName" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Johnathan Smith" type="text"/>
                     </div>
                     <div class="space-y-2">
                         <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Company</label>
-                        <input class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Enterprise Corp" type="text"/>
+                        <input id="company" class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Enterprise Corp" type="text"/>
                     </div>
                 </div>
                 
                 <div class="space-y-2">
                     <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Email Address</label>
-                    <input class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="jsmith@enterprise.com" type="email"/>
+                    <input id="email" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="jsmith@enterprise.com" type="email"/>
                 </div>
 
                 <div class="space-y-2">
                     <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Inquiry Subject</label>
                     <div class="relative">
-                        <select class="w-full bg-white border-0 rounded-lg px-5 py-4 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
+                        <select id="subject" class="w-full bg-white border-0 rounded-lg px-5 py-4 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
                             <option>Strategic Brand Advisory</option>
                             <option>Copywriting & Narrative</option>
                             <option>Publishing & Editorial</option>
@@ -685,13 +685,14 @@
 
                 <div class="space-y-2">
                     <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Brief Context</label>
-                    <textarea class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light resize-none text-on-background placeholder:text-on-surface-variant/30" placeholder="Please describe the nature of your requirement..." rows="4"></textarea>
+                    <textarea id="message" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light resize-none text-on-background placeholder:text-on-surface-variant/30" placeholder="Please describe the nature of your requirement..." rows="4"></textarea>
                 </div>
 
                 <div class="pt-4">
-                    <button class="w-full py-4 bg-inverse-surface text-surface rounded-lg font-bold uppercase tracking-[0.2em] text-xs hover:opacity-90 transition-all" type="button" onclick="window.open('https://notion.so/3308ed608af980e09049fd7bae9641d0', '_blank')">
-                        Gửi yêu cầu qua Notion
+                    <button id="submitBtn" class="w-full py-4 bg-inverse-surface text-surface rounded-lg font-bold uppercase tracking-[0.2em] text-xs hover:opacity-90 transition-all" type="submit">
+                        Gửi yêu cầu & Đổ về Notion
                     </button>
+                    <p id="formStatus" class="mt-4 text-xs text-center font-label tracking-wide hidden"></p>
                 </div>
             </form>
         </div>
@@ -956,4 +957,58 @@
         });
     }
 </script>
-</body></html>
+    <script>
+        // Handle contact form submission
+        const leadForm = document.getElementById('leadForm');
+        if (leadForm) {
+            leadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submitBtn');
+                const statusMsg = document.getElementById('formStatus');
+                if (!statusMsg || !submitBtn) return;
+                
+                const formData = {
+                    fullName: document.getElementById('fullName').value,
+                    company: document.getElementById('company').value,
+                    email: document.getElementById('email').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value
+                };
+
+                // Loading state
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'ĐANG GỬI...';
+                statusMsg.classList.remove('hidden');
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = '#6b7280'; 
+                statusMsg.innerText = 'Đang kết nối với Notion...';
+
+                try {
+                    const response = await fetch('/api/leads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        statusMsg.innerText = 'Cảm ơn chị! Thông tin đã được lưu vào Notion.';
+                        statusMsg.style.color = '#16a34a'; 
+                        leadForm.reset();
+                    } else {
+                        throw new Error(result.message || 'Có lỗi xảy ra.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    statusMsg.innerText = 'Lỗi: ' + error.message + '. Chị vui lòng kiểm tra lại Connection trong Notion.';
+                    statusMsg.style.color = '#dc2626'; 
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'GỬI YÊU CẦU & ĐỔ VỀ NOTION';
+                }
+            });
+        }
+    </script>
+</body></html>
