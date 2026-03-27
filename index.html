@@ -940,15 +940,16 @@
                                     const parts = buffer.split('[BREAK]');
                                     aiBubble.innerHTML = formatContent(parts[0].trim());
                                     buffer = parts.slice(1).join('[BREAK]').trim();
-                                    if (buffer || !done) aiBubble = addBubble("", false, true);
+                                    if (!done) aiBubble = addBubble("", false, true);
                                 } else {
-                                    aiBubble.innerHTML = formatContent(buffer);
+                                    if (buffer.trim()) aiBubble.innerHTML = formatContent(buffer);
                                 }
                                 refs.messages.scrollTop = refs.messages.scrollHeight;
                             } catch (e) {}
                         }
                     }
                 }
+                if (!buffer.trim() && !aiBubble.innerText.trim()) aiBubble.remove();
             } catch (err) {
                 document.getElementById(tId)?.remove();
                 addBubble('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
