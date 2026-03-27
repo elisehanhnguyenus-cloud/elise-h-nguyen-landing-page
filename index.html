@@ -737,12 +737,12 @@
         </div>
 
         <!-- Pre-chat Gate -->
-        <div id="chat-gate" class="absolute inset-x-0 bottom-0 top-[72px] bg-white z-[100] flex flex-col items-center justify-center p-8 text-center hidden">
+        <div id="chat-gate" class="absolute inset-x-0 bottom-0 top-[72px] bg-white z-[100] flex flex-col items-center justify-center p-8 text-center hidden transition-opacity duration-300">
             <div class="w-16 h-16 bg-[#C05C3F]/10 rounded-2xl flex items-center justify-center mb-6">
                 <span class="material-symbols-outlined text-[#C05C3F] text-3xl">waving_hand</span>
             </div>
             <h3 class="font-headline font-bold text-xl mb-2">Chào Bạn!</h3>
-            <p class="text-xs text-[#555] mb-8 leading-relaxed">Để Kat có thể hỗ trợ chị tốt nhất, Bạn vui lòng để lại thông tin liên hệ nhé.</p>
+            <p class="text-xs text-[#555] mb-8 leading-relaxed px-4">để em có thể hỗ trợ bạn tốt nhất, Bạn vui lòng để lại thông tin liên hệ nhé.</p>
             
             <form id="gate-form" class="w-full space-y-3">
                 <input type="text" id="gate-name" placeholder="Họ và tên của Bạn" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-5 py-3 text-sm focus:ring-1 focus:ring-[#C05C3F]/30" required>
@@ -751,12 +751,12 @@
                     Bắt đầu hội thoại cùng Kat
                 </button>
             </form>
-            <p class="text-[10px] text-on-surface-variant/40 mt-6 italic">Thông tin của chị luôn được bảo mật tuyệt đối.</p>
+            <p class="text-[10px] text-on-surface-variant/40 mt-6 italic">Thông tin của Bạn luôn được bảo mật tuyệt đối.</p>
         </div>
 
         <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 bg-[#FCF9F4] text-sm scroll-smooth no-scrollbar relative">
-            <div id="messages-inner"></div>
+        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto overflow-x-hidden flex flex-col space-y-4 bg-[#FCF9F4] text-sm scroll-smooth no-scrollbar relative min-h-0">
+            <!-- Messages injected via JS -->
         </div>
 
         <!-- Action Bar (Quick Services) -->
@@ -1000,6 +1000,10 @@
                 refs.input.disabled = false;
                 refs.submit.disabled = false;
                 refs.input.focus();
+                // Final scroll safety
+                setTimeout(() => {
+                    refs.messages.scrollTop = refs.messages.scrollHeight;
+                }, 100);
             }
         });
 
