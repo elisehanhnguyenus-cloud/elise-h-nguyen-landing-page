@@ -32,7 +32,7 @@ export default async function handler(req, res) {
                     DỮ LIỆU DỊCH VỤ (TÓM TẮT ĐỂ GIỚI THIỆU):
                     1. Chiến lược Thương hiệu & Nội dung (Brand & Content Strategy).
                     2. Copywriting chuyển đổi (Sales copy, Web, Landing page).
-                    3. AI Automation (Xây hệ thống tự động hóa Marketing/Sales).
+                    3. AI Automation: Thiết kế hệ thống AI cá nhân hóa cho Marketing và Sáng tạo (đặc biệt là Content & Sáng tạo đồ thủ công - handmade). KHÔNG tập trung vào mảng Sales.
                     4. Tư vấn chiến lược 1:1 (Chẩn đoán & Roadmap).
                     5. Xây thương hiệu cá nhân (Expert positioning cho Founder).
                     6. Brand Clarity Call (Gói miễn phí 60p - có điều kiện).
