@@ -809,6 +809,12 @@
         html = html.replace(/\*(.*?)\*/g, '<em style="opacity: 0.9;">$1</em>');
         // Gạch chân / Highlight
         html = html.replace(/__(.*?)__/g, '<span style="border-bottom: 2px solid #C05C3F; padding-bottom: 1px;">$1</span>');
+        
+        // Render Buttons: [BTN:Label]
+        html = html.replace(/\[BTN:(.*?)\]/g, (match, label) => {
+            return `<button onclick="handleQuickReply('${label}')" class="quick-reply-btn m-1 px-3 py-1.5 border border-[#C05C3F] text-[#C05C3F] rounded-full text-xs font-medium hover:bg-[#C05C3F] hover:text-white transition-all duration-300 transform hover:scale-105 active:scale-95">${label}</button>`;
+        });
+
         // Đầu mục
         html = html.replace(/^- (.*)/gm, '<div style="margin-top: 6px; padding-left: 12px; display: flex; gap: 8px;"><span>•</span><span>$1</span></div>');
         html = html.replace(/^(\d+)\. (.*)/gm, '<div style="margin-top: 8px; font-weight: 600; color: #C05C3F;">$1. $2</div>');
@@ -819,6 +825,12 @@
         html = html.replace(/\n/g, '<br>');
         return html;
     }
+
+    // Handle Quick Reply actions
+    window.handleQuickReply = (text) => {
+        chatInput.value = text;
+        chatForm.dispatchEvent(new Event('submit'));
+    };
 
     function openCalendar() {
         if (!isOpen) toggleChat();
