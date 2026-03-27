@@ -717,358 +717,360 @@
 </div>
 <p class="font-label text-xs tracking-widest uppercase text-on-surface-variant/60" style="">© 2024 ELISE H. NGUYEN. BUILT TO LAST.</p>
 </div>
-<div class="flex flex-wrap justify-center gap-8">
-<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">Privacy Policy</a>
-<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">Terms of Service</a>
-<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">LinkedIn</a>
-<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">Instagram</a>
-</div>
-<div class="flex gap-4">
-<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#" style="">
-<span class="material-symbols-outlined text-sm" data-icon="link" style="">link</span>
-</a>
-<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#" style="">
-<span class="material-symbols-outlined text-sm" data-icon="mail" style="">mail</span>
-</a>
-</div>
-</div>
-</footer>
-<!-- Chatbot UI begin -->
-<div id="chatbot-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-body">
-    <div id="chat-window" class="hidden w-[360px] max-w-[90vw] mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[550px] max-h-[80vh]">
-        <div class="bg-primary text-on-primary p-4 flex justify-between items-center" style="background-color: #C05C3F;">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-lg">smart_toy</span>
-                <span class="font-headline font-bold text-sm tracking-wider">Elise AI Assistant</span>
+<div class=<!-- Chatbot UI Section -->
+<div id="chatbot-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end font-body">
+    <div id="chat-window" class="hidden w-[380px] max-w-[90vw] mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[600px] max-h-[85vh] animate-fade-in">
+        <!-- Header -->
+        <div class="bg-[#C05C3F] text-white p-5 flex justify-between items-center shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <span class="material-symbols-outlined text-base">concierge</span>
+                </div>
+                <div>
+                    <span class="font-headline font-bold text-sm tracking-wide block">Concierge Advisor</span>
+                    <span class="text-[10px] opacity-80 uppercase tracking-widest font-bold">Elise Hạnh Nguyễn</span>
+                </div>
             </div>
-            <button id="close-chat" class="hover:opacity-70 transition-opacity">
+            <button id="close-chat" class="hover:rotate-90 transition-transform duration-300">
                 <span class="material-symbols-outlined text-lg">close</span>
             </button>
         </div>
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-surface-container-lowest text-sm font-light">
-            <div class="flex items-start gap-2">
-                <div class="bg-surface-variant text-on-surface p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
-                    Xin chào! Tôi là trợ lý ảo của Elise. Tôi có thể giúp gì cho bạn hôm nay?
-                </div>
-            </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 bg-[#FCF9F4] text-sm scroll-smooth no-scrollbar">
+            <!-- Messages will be injected via JS -->
         </div>
-        <div class="pt-3 px-3 pb-1 bg-surface border-t border-outline-variant/10 flex gap-2 overflow-x-auto" style="scrollbar-width: none;">
-            <button type="button" onclick="openCalendar()" class="flex-shrink-0 bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-full text-xs font-bold uppercase hover:bg-primary/20 transition-all flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">event</span> Đặt lịch
+
+        <!-- Action Bar (Quick Services) -->
+        <div class="px-4 py-3 bg-white border-t border-outline-variant/10 flex gap-3 justify-center">
+            <button type="button" onclick="handleChatAction('calendar')" class="flex-1 bg-[#C05C3F]/5 text-[#C05C3F] border border-[#C05C3F]/20 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#C05C3F]/10 transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm">calendar_month</span> ĐẶT LỊCH
             </button>
-            <button type="button" onclick="quickAsk('Cho tôi biết về dịch vụ của bạn')" class="flex-shrink-0 bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1.5 rounded-full text-xs font-bold uppercase hover:bg-secondary/20 transition-all flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">work</span> Dịch vụ
+            <button type="button" onclick="handleChatAction('services')" class="flex-1 bg-surface-dim text-on-surface border border-outline-variant/20 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-outline-variant/10 transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm">business_center</span> DỊCH VỤ
             </button>
         </div>
-        <div class="px-3 pb-3 bg-surface">
+
+        <!-- Input Area -->
+        <div class="p-4 bg-white border-t border-outline-variant/10">
             <form id="chat-form" class="flex gap-2">
-                <input id="chat-input" type="text" placeholder="Gửi tin nhắn..." class="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-colors text-sm text-on-background" required>
-                <button type="submit" class="flex-shrink-0 bg-primary text-on-primary w-10 h-10 rounded-xl hover:opacity-90 flex items-center justify-center transition-all bg-[#C05C3F]" style="background-color: #C05C3F;">
-                    <span class="material-symbols-outlined text-sm">send</span>
+                <input id="chat-input" type="text" placeholder="Gửi câu hỏi cho Elise..." class="flex-1 bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-5 py-3 focus:outline-none focus:ring-1 focus:ring-[#C05C3F]/30 transition-all text-sm text-on-background placeholder:opacity-50" required>
+                <button type="submit" id="chat-submit" class="flex-shrink-0 bg-[#C05C3F] text-white w-12 h-12 rounded-xl hover:opacity-90 flex items-center justify-center transition-all shadow-md active:scale-95">
+                    <span class="material-symbols-outlined text-lg">send</span>
                 </button>
             </form>
         </div>
     </div>
-    <button id="chat-toggle" class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform" style="background-color: #C05C3F;">
-        <span class="material-symbols-outlined text-2xl" id="chat-icon">chat</span>
+
+    <!-- Toggle Button -->
+    <button id="chat-toggle" class="w-16 h-16 bg-[#C05C3F] text-white rounded-2xl shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative group overflow-hidden border-2 border-white/20">
+        <span class="material-symbols-outlined text-2xl relative z-10" id="chat-icon">forum</span>
+        <div class="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
     </button>
 </div>
 
+<!-- Chatbot Styles & Animation -->
+<style>
+    .service-folder summary::-webkit-details-marker { display: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @keyframes typingPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+    .typing-dot { animation: typingPulse 0.8s infinite; display: inline-block; width: 4px; height: 4px; background: #C05C3F; border-radius: 50%; margin: 0 1.5px; }
+    .bubble-in { animation: bubbleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    @keyframes bubbleIn { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+</style>
+
+<!-- Chatbot Implementation -->
 <script>
-    const chatToggle = document.getElementById('chat-toggle');
-    const chatWindow = document.getElementById('chat-window');
-    const closeChat = document.getElementById('close-chat');
-    const chatIcon = document.getElementById('chat-icon');
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatMessages = document.getElementById('chat-messages');
+    (function() {
+        const refs = {
+            toggle: document.getElementById('chat-toggle'),
+            window: document.getElementById('chat-window'),
+            close: document.getElementById('close-chat'),
+            icon: document.getElementById('chat-icon'),
+            form: document.getElementById('chat-form'),
+            input: document.getElementById('chat-input'),
+            messages: document.getElementById('chat-messages'),
+            submit: document.getElementById('chat-submit')
+        };
 
-    let isOpen = false;
+        let isOpen = false;
 
-    function toggleChat() {
-        isOpen = !isOpen;
-        if (isOpen) {
-            chatWindow.classList.remove('hidden');
-            chatWindow.classList.add('flex');
-            chatIcon.innerText = 'keyboard_arrow_down';
-        } else {
-            chatWindow.classList.add('hidden');
-            chatWindow.classList.remove('flex');
-            chatIcon.innerText = 'chat';
+        function toggleChat() {
+            isOpen = !isOpen;
+            refs.window.classList.toggle('hidden', !isOpen);
+            refs.window.classList.toggle('flex', isOpen);
+            refs.icon.innerText = isOpen ? 'keyboard_arrow_down' : 'forum';
+            if (isOpen) refs.input.focus();
         }
-    }
 
-    chatToggle.addEventListener('click', toggleChat);
-    closeChat.addEventListener('click', toggleChat);
+        refs.toggle.addEventListener('click', toggleChat);
+        refs.close.addEventListener('click', toggleChat);
 
-    function formatMarkdown(text) {
-        if (!text) return "";
-        // Bôi đậm màu Elise
-        let html = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #C05C3F; font-weight: 700;">$1</strong>');
-        // In nghiêng
-        html = html.replace(/\*(.*?)\*/g, '<em style="opacity: 0.9;">$1</em>');
-        // Gạch chân / Highlight
-        html = html.replace(/__(.*?)__/g, '<span style="border-bottom: 2px solid #C05C3F; padding-bottom: 1px;">$1</span>');
-        
-        // Render Buttons: [BTN:Label]
-        html = html.replace(/\[BTN:(.*?)\]/g, (match, label) => {
-            return `<button onclick="handleQuickReply('${label}')" class="quick-reply-btn m-1 px-3 py-1.5 border border-[#C05C3F] text-[#C05C3F] rounded-full text-xs font-medium hover:bg-[#C05C3F] hover:text-white transition-all duration-300 transform hover:scale-105 active:scale-95">${label}</button>`;
-        });
+        function formatContent(text) {
+            if (!text) return "";
+            // Bold with brand color
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#C05C3F] font-bold">$1</strong>');
+            // Underline / Highlight
+            html = html.replace(/__(.*?)__/g, '<span class="border-b-2 border-[#C05C3F]/20">$1</span>');
+            // Headers
+            html = html.replace(/### (.*)/g, '<h4 class="font-headline font-bold text-base mt-4 mb-2 text-on-surface border-l-4 border-[#C05C3F] pl-3">$1</h4>');
+            // List items
+            html = html.replace(/^- (.*)/gm, '<div class="flex gap-2 mt-2 leading-relaxed"><span class="text-[#C05C3F]">•</span><span>$1</span></div>');
 
-        // Đầu mục
-        html = html.replace(/^- (.*)/gm, '<div style="margin-top: 6px; padding-left: 12px; display: flex; gap: 8px;"><span>•</span><span>$1</span></div>');
-        html = html.replace(/^(\d+)\. (.*)/gm, '<div style="margin-top: 8px; font-weight: 600; color: #C05C3F;">$1. $2</div>');
-        // Tiêu đề
-        html = html.replace(/### (.*)/g, '<div style="font-family: \'Playfair Display\', serif; font-size: 1.1rem; font-weight: 700; margin-top: 16px; color: #1a1a1a;">$1</div>');
-        
-        html = html.replace(/\n\n/g, '<br><br>');
-        html = html.replace(/\n/g, '<br>');
-        return html;
-    }
-
-    // Handle Quick Reply actions
-    window.handleQuickReply = (text) => {
-        chatInput.value = text;
-        chatForm.dispatchEvent(new Event('submit'));
-    };
-
-    function openCalendar() {
-        if (!isOpen) toggleChat();
-        addMessage(`Để đặt lịch hẹn và tư vấn chiến lược với Elise, bạn vui lòng hoàn tất form thông tin trên website để Elise có thể chuẩn bị tốt nhất cho buổi làm việc nhé:<br><br>
-        <button onclick="document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }); toggleChat();" class="inline-flex items-center justify-center gap-2 bg-primary text-on-primary w-full py-3 rounded-xl text-sm font-bold uppercase tracking-widest hover:opacity-90 shadow-lg" style="background-color: #C05C3F; border: none; cursor: pointer; color: white;">
-            <span class="material-symbols-outlined text-sm">edit_calendar</span> ĐẶT LỊCH TƯ VẤN
-        </button>`, false, true);
-    }
-
-    function quickAsk(question) {
-        if (!isOpen) toggleChat();
-        chatInput.value = question;
-        chatForm.dispatchEvent(new Event('submit'));
-    }
-
-    function addMessage(text, isUser = false, isHtml = false) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`;
-        
-        const bubble = document.createElement('div');
-        bubble.className = isUser 
-            ? 'bg-primary text-on-primary p-4 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed text-sm shadow-md' 
-            : 'bg-white text-[#333] p-4 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed text-sm shadow-sm border border-outline-variant/10';
-        if (isUser) bubble.style.backgroundColor = '#C05C3F';
-        
-        if (isHtml) {
-            bubble.innerHTML = text;
-        } else {
-            bubble.innerHTML = formatMarkdown(text);
-        }
-        
-        msgDiv.appendChild(bubble);
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        return bubble;
-    }
-
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const msg = chatInput.value.trim();
-        if (!msg) return;
-
-        addMessage(msg, true);
-        chatInput.value = '';
-        chatInput.disabled = true;
-
-        const typingId = 'typing-' + Date.now();
-        const typingDiv = document.createElement('div');
-        typingDiv.id = typingId;
-        typingDiv.className = 'text-surface-variant italic font-light text-[10px] mt-1 ml-2 opacity-60';
-        typingDiv.textContent = 'Elise đang viết...';
-        chatMessages.appendChild(typingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        let aiBubble = null;
-        let fullBuffer = "";
-
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg })
+            // Folders: [FOLDER:Title|Content]
+            html = html.replace(/\[FOLDER:(.*?)\|(.*?)\]/gs, (match, title, content) => {
+                return `<details class="service-folder my-3 border border-[#C05C3F]/20 rounded-xl overflow-hidden bg-white shadow-sm transition-all duration-300">
+                    <summary class="p-3 cursor-pointer font-bold text-[10px] hover:bg-[#C05C3F]/5 transition-colors list-none flex justify-between items-center text-[#C05C3F] uppercase tracking-widest">
+                        ${title.trim()} <span class="material-symbols-outlined text-sm transition-transform duration-300">expand_more</span>
+                    </summary>
+                    <div class="p-4 text-xs bg-[#FDFCFB] border-t border-[#C05C3F]/10 leading-relaxed text-[#555]">${content.trim().replace(/\n/g, '<br>')}</div>
+                </details>`;
             });
 
-            if (!response.ok) throw new Error('Network error');
+            // Quick Reply Buttons: [BTN:Label]
+            html = html.replace(/\[BTN:(.*?)\]/g, (match, label) => {
+                return `<button onclick="window.submitQuickReply('${label.trim()}')" class="m-1 px-4 py-2 border border-[#C05C3F] text-[#C05C3F] rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-[#C05C3F] hover:text-white transition-all shadow-sm active:scale-95">${label.trim()}</button>`;
+            });
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+            return html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+        }
+
+        window.submitQuickReply = (text) => {
+            refs.input.value = text;
+            refs.form.dispatchEvent(new Event('submit'));
+        };
+
+        window.handleChatAction = (type) => {
+            const actions = {
+                calendar: () => {
+                    document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+                    if (isOpen) toggleChat();
+                },
+                services: () => window.submitQuickReply('Cho tôi biết về các dịch vụ của Elise'),
+                handmade: () => window.submitQuickReply('Kể chuyện bản sắc & Go Global'),
+                marcom: () => window.submitQuickReply('Professional Mentoring')
+            };
+            if (actions[type]) actions[type]();
+        };
+
+        function addBubble(text, isUser = false, isHtml = false) {
+            const wrap = document.createElement('div');
+            wrap.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'} bubble-in mb-4`;
             
-            document.getElementById(typingId).remove();
-            aiBubble = addMessage("", false); 
+            const b = document.createElement('div');
+            b.className = isUser 
+                ? 'bg-[#C05C3F] text-white p-4 rounded-2xl rounded-tr-sm max-w-[85%] leading-relaxed text-sm shadow-md font-medium' 
+                : 'bg-white text-[#333] p-4 rounded-2xl rounded-tl-sm max-w-[85%] leading-relaxed text-sm shadow-sm border border-outline-variant/10';
+            
+            b.innerHTML = isHtml ? text : formatContent(text);
+            wrap.appendChild(b);
+            refs.messages.appendChild(wrap);
+            refs.messages.scrollTop = refs.messages.scrollHeight;
+            return b;
+        }
 
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.substring(6));
-                            fullBuffer += data.content;
-                            
-                            if (fullBuffer.includes('[BREAK]')) {
-                                const parts = fullBuffer.split('[BREAK]');
-                                aiBubble.innerHTML = formatMarkdown(parts[0].trim());
-                                fullBuffer = parts.slice(1).join('[BREAK]').trim();
-                                if (fullBuffer || !done) {
-                                    await new Promise(r => setTimeout(r, 600)); 
-                                    aiBubble = addMessage("", false);
+        refs.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = refs.input.value.trim();
+            if (!msg) return;
+
+            addBubble(msg, true);
+            refs.input.value = '';
+            refs.input.disabled = true;
+            refs.submit.disabled = true;
+
+            const tId = 'typing-' + Date.now();
+            const tDiv = document.createElement('div');
+            tDiv.id = tId;
+            tDiv.className = 'flex items-start gap-2 mb-4 bubble-in';
+            tDiv.innerHTML = `<div class="bg-white p-3 rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-0.5">
+                <span class="typing-dot"></span><span class="typing-dot" style="animation-delay: 0.2s"></span><span class="typing-dot" style="animation-delay: 0.4s"></span>
+            </div>`;
+            refs.messages.appendChild(tDiv);
+            refs.messages.scrollTop = refs.messages.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+
+                document.getElementById(tId)?.remove();
+                if (!res.ok) throw new Error('API Error');
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+                let aiBubble = addBubble("", false, true);
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const parsed = JSON.parse(line.substring(6));
+                                let content = parsed.choices[0]?.delta?.content || "";
+                                
+                                // Automatic Notion Lead Capture
+                                if (content.includes('[SAVE_TO_NOTION:')) {
+                                    const match = content.match(/\[SAVE_TO_NOTION:(.*?)\]/);
+                                    if (match) {
+                                        try {
+                                            const data = JSON.parse(match[1]);
+                                            fetch('/api/leads', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ ...data, isChatSummary: true })
+                                            });
+                                            content = content.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
+                                        } catch (e) {}
+                                    }
                                 }
-                            } else {
-                                aiBubble.innerHTML = formatMarkdown(fullBuffer);
-                            }
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        } catch (e) {}
+
+                                buffer += content;
+                                if (buffer.includes('[BREAK]')) {
+                                    const parts = buffer.split('[BREAK]');
+                                    aiBubble.innerHTML = formatContent(parts[0].trim());
+                                    buffer = parts.slice(1).join('[BREAK]').trim();
+                                    if (buffer || !done) aiBubble = addBubble("", false, true);
+                                } else {
+                                    aiBubble.innerHTML = formatContent(buffer);
+                                }
+                                refs.messages.scrollTop = refs.messages.scrollHeight;
+                            } catch (e) {}
+                        }
                     }
                 }
+            } catch (err) {
+                document.getElementById(tId)?.remove();
+                addBubble('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
+            } finally {
+                refs.input.disabled = false;
+                refs.submit.disabled = false;
+                refs.input.focus();
             }
-        } catch (error) {
-            if (document.getElementById(typingId)) document.getElementById(typingId).remove();
-            addMessage('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
-        } finally {
-            chatInput.disabled = false;
-            chatInput.focus();
-        }
-    });
-</script>
-<!-- Chatbot UI end -->
+        });
 
-<!-- Custom Animated Cursor -->
-<style>
-    @media (pointer: fine) {
-        body, a, button, input, textarea, select, [role="button"] {
-            cursor: none !important;
-        }
-    }
-</style>
+        // Initial Greeting
+        setTimeout(() => {
+            addBubble(`Chào mừng chị đến với không gian của __Elise Hạnh Nguyễn__.<br><br>Tôi là trợ lý ảo Concierge Advisor. Rất vui được đồng hành cùng chị qua các hướng chuyên môn chính:<br><br>1. **Storyselling & Copywriting** (Kể chuyện bản sắc & Chắp bút nội dung)<br>2. **AI Automation for Creative** (Tự động hóa AI cho ngành sáng tạo - Dành riêng cho lãnh đạo/chuyên gia)<br>3. **Brand Clarity Call 60p** (60 phút gỡ rối bản sắc)<br><br>Để được hỗ trợ đúng trọng tâm nhất, chị vui lòng chọn nhóm mình thuộc về nhé:<br><br>[BTN:Chủ shop Handmade] [BTN:Leader / Chuyên gia] [BTN:Junior Marcom / Creative]`, false);
+        }, 1200);
+    })();
+</script>
+
+<!-- Lead Management Logic -->
 <script>
-    if (window.matchMedia("(pointer: fine)").matches) {
+    (function() {
+        const form = document.getElementById('leadForm');
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('formStatus');
+            
+            btn.disabled = true;
+            btn.innerText = 'ĐANG GỬI...';
+            status.innerHTML = '<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#C05C3F] animate-ping"></span> Đang gửi thông tin đến Elise...</span>';
+            status.className = 'text-xs mt-4 block text-[#C05C3F] italic font-medium';
+            status.style.display = 'block';
+
+            const data = {
+                fullName: document.getElementById('fullName').value,
+                company: document.getElementById('company').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                bookingDate: document.getElementById('bookingDate').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const res = await fetch('/api/leads', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    status.innerText = 'Cảm ơn chị! Elise đã nhận được thông tin và sẽ phản hồi sớm nhất qua email.';
+                    status.classList.replace('text-[#C05C3F]', 'text-primary');
+                    form.reset();
+                } else {
+                    throw new Error(result.error || 'Giao dịch không thành công');
+                }
+            } catch (err) {
+                status.innerText = 'Lỗi hệ thống: ' + err.message + '. Chị vui lòng thử lại sau.';
+                status.classList.replace('text-[#C05C3F]', 'text-error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
+            }
+        });
+    })();
+</script>
+
+<!-- Visual Flourish: Cursor Trail -->
+<script>
+    (function() {
+        if (!window.matchMedia("(pointer: fine)").matches) return;
+        
         const coords = { x: 0, y: 0 };
         const circles = [];
-        const baseColor = "#C05C3F";
+        const color = "#C05C3F";
         
-        // Cấu hình số lượng particle và tạo DOM
-        const numParticles = 20;
-        for (let i = 0; i < numParticles; i++) {
-            const circle = document.createElement("div");
-            circle.className = "fixed top-0 left-0 rounded-full pointer-events-none z-[10000] mix-blend-multiply";
-            circle.style.width = "12px";
-            circle.style.height = "12px";
-            circle.style.backgroundColor = baseColor;
-            document.body.appendChild(circle);
-            circles.push(circle);
-            circle.x = 0;
-            circle.y = 0;
+        for (let i = 0; i < 20; i++) {
+            const c = document.createElement("div");
+            c.className = "fixed top-0 left-0 rounded-full pointer-events-none z-[10000] mix-blend-multiply";
+            c.style.width = "12px";
+            c.style.height = "12px";
+            c.style.backgroundColor = color;
+            document.body.appendChild(c);
+            circles.push({ el: c, x: 0, y: 0 });
         }
 
-        window.addEventListener("mousemove", function(e){
+        window.addEventListener("mousemove", (e) => {
             coords.x = e.clientX;
             coords.y = e.clientY;
         });
 
-        // Loop tạo hiệu ứng kéo dài liên tục (Trail curve)
-        function animateCircles() {
+        function animate() {
             let x = coords.x;
             let y = coords.y;
-            
-            circles.forEach(function (circle, index) {
-                // Di chuyển hạt tới vị trí với scale giảm dần về đuôi
-                const scale = (circles.length - index) / circles.length;
-                circle.style.transform = `translate(${x - 6}px, ${y - 6}px) scale(${scale})`;
-                circle.style.opacity = 0.8 * scale;
-                
-                circle.x = x;
-                circle.y = y;
-
-                // Tính toán vị trí hạt tiếp theo (tạo độ cong và trễ)
-                const nextCircle = circles[index + 1] || circles[0];
-                x += (nextCircle.x - x) * 0.4;
-                y += (nextCircle.y - y) * 0.4;
+            circles.forEach((c, i) => {
+                const s = (circles.length - i) / circles.length;
+                c.el.style.transform = `translate(${x - 6}px, ${y - 6}px) scale(${s})`;
+                c.el.style.opacity = 0.6 * s;
+                c.x = x; c.y = y;
+                const next = circles[i + 1] || circles[0];
+                x += (next.x - x) * 0.35;
+                y += (next.y - y) * 0.35;
             });
-            
-            requestAnimationFrame(animateCircles);
+            requestAnimationFrame(animate);
         }
-        animateCircles();
+        animate();
 
-        // Hover effect cho link và button
-        document.querySelectorAll('a, button, [role="button"], input, textarea, [data-icon]').forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                circles[0].style.transform = `translate(${coords.x - 6}px, ${coords.y - 6}px) scale(3.5)`;
-                circles[0].style.backgroundColor = "transparent";
-                circles[0].style.border = "1px solid #C05C3F";
-                circles[0].style.mixBlendMode = "normal";
+        // Interaction
+        document.querySelectorAll('a, button, input, textarea').forEach(el => {
+            el.addEventListener('mouseenter', () => { 
+                circles[0].el.style.transform += " scale(3)"; 
+                circles[0].el.style.border = "1px solid #C05C3F"; 
+                circles[0].el.style.backgroundColor = "transparent"; 
             });
-            el.addEventListener('mouseleave', () => {
-                circles[0].style.backgroundColor = baseColor;
-                circles[0].style.border = "none";
-                circles[0].style.mixBlendMode = "multiply";
+            el.addEventListener('mouseleave', () => { 
+                circles[0].el.style.border = "none"; 
+                circles[0].el.style.backgroundColor = color; 
             });
         });
-    }
+    })();
 </script>
-    <script>
-        // Handle contact form submission
-        const leadForm = document.getElementById('leadForm');
-        if (leadForm) {
-            leadForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const submitBtn = document.getElementById('submitBtn');
-                const statusMsg = document.getElementById('formStatus');
-                if (!statusMsg || !submitBtn) return;
-                
-                const formData = {
-                    fullName: document.getElementById('fullName').value,
-                    company: document.getElementById('company').value,
-                    email: document.getElementById('email').value,
-                    subject: document.getElementById('subject').value,
-                    bookingDate: document.getElementById('bookingDate').value,
-                    message: document.getElementById('message').value
-                };
 
-                // Loading state
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'ĐANG GỬI...';
-                statusMsg.classList.remove('hidden');
-                statusMsg.style.display = 'block';
-                statusMsg.style.color = '#6b7280'; 
-                statusMsg.innerText = 'Đang kết nối với Notion...';
-
-                try {
-                    const response = await fetch('/api/leads', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        statusMsg.innerText = 'Cảm ơn chị! Thông tin đã được lưu vào Notion.';
-                        statusMsg.style.color = '#16a34a'; 
-                        leadForm.reset();
-                    } else {
-                        throw new Error(result.message || 'Có lỗi xảy ra.');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    statusMsg.innerText = 'Lỗi: ' + error.message + '. Chị vui lòng kiểm tra lại Connection trong Notion.';
-                    statusMsg.style.color = '#dc2626'; 
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
-                }
-            });
-        }
-    </script>
 </body></html>
