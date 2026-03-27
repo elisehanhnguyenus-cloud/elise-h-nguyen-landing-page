@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   const { fullName, email, company, subject, bookingDate, message } = req.body;
   const NOTION_TOKEN = process.env.NOTION_SECRET;
-  const DATABASE_ID = '3308ed608af980e09049fd7bae9641d0';
+  const DATABASE_ID = '3308ed608af9804c8401c5599ef4f556';
 
   if (!NOTION_TOKEN) {
     return res.status(500).json({ message: 'NOTION_SECRET is not configured in Vercel Environment Variables.' });
