@@ -840,7 +840,43 @@
         } else if (isUser) {
             bubble.textContent = text;
         } else {
-            bubble.innerHTML = formatMarkdown(text);
+            // Typewriter effect for AI messages
+            const fullHtml = formatMarkdown(text);
+            bubble.innerHTML = '';
+            let i = 0;
+            const speed = 10; // Chữ chạy mượt
+            
+            // Temporary container to parse HTML properly while typing
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = fullHtml;
+            const nodes = Array.from(tempDiv.childNodes);
+            
+            msgDiv.appendChild(bubble);
+            chatMessages.appendChild(msgDiv);
+
+            async function typeNode(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const content = node.textContent;
+                    for (let char of content) {
+                        bubble.innerHTML += char;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        await new Promise(r => setTimeout(r, speed));
+                    }
+                } else {
+                    const clone = node.cloneNode(false);
+                    bubble.appendChild(clone);
+                    for (let child of node.childNodes) {
+                        await typeNode(child);
+                    }
+                }
+            }
+
+            (async () => {
+                for (let node of nodes) {
+                    await typeNode(node);
+                }
+            })();
+            return; // Exit early as we added to DOM inside async
         }
         
         msgDiv.appendChild(bubble);
@@ -861,7 +897,7 @@
         const typingDiv = document.createElement('div');
         typingDiv.id = typingId;
         typingDiv.className = 'text-surface-variant italic font-light text-xs mt-1 ml-2';
-        typingDiv.textContent = 'Đang trả lời...';
+        typingDiv.textContent = 'Elise đang suy nghĩ (80% Logic, 20% Zen)...';
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
