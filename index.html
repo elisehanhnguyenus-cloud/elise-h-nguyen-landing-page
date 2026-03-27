@@ -736,9 +736,27 @@
             </button>
         </div>
 
+        <!-- Pre-chat Gate -->
+        <div id="chat-gate" class="absolute inset-x-0 bottom-0 top-[72px] bg-white z-[100] flex flex-col items-center justify-center p-8 text-center hidden">
+            <div class="w-16 h-16 bg-[#C05C3F]/10 rounded-2xl flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-[#C05C3F] text-3xl">waving_hand</span>
+            </div>
+            <h3 class="font-headline font-bold text-xl mb-2">Chào Bạn!</h3>
+            <p class="text-xs text-[#555] mb-8 leading-relaxed">Để Kat có thể hỗ trợ chị tốt nhất, Bạn vui lòng để lại thông tin liên hệ nhé.</p>
+            
+            <form id="gate-form" class="w-full space-y-3">
+                <input type="text" id="gate-name" placeholder="Họ và tên của Bạn" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-5 py-3 text-sm focus:ring-1 focus:ring-[#C05C3F]/30" required>
+                <input type="email" id="gate-email" placeholder="Địa chỉ email" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-5 py-3 text-sm focus:ring-1 focus:ring-[#C05C3F]/30" required>
+                <button type="submit" class="w-full bg-[#C05C3F] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest mt-4 shadow-md hover:opacity-90 active:scale-95 transition-all">
+                    Bắt đầu hội thoại cùng Kat
+                </button>
+            </form>
+            <p class="text-[10px] text-on-surface-variant/40 mt-6 italic">Thông tin của chị luôn được bảo mật tuyệt đối.</p>
+        </div>
+
         <!-- Messages Area -->
-        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 bg-[#FCF9F4] text-sm scroll-smooth no-scrollbar">
-            <!-- Messages will be injected via JS -->
+        <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 bg-[#FCF9F4] text-sm scroll-smooth no-scrollbar relative">
+            <div id="messages-inner"></div>
         </div>
 
         <!-- Action Bar (Quick Services) -->
@@ -796,14 +814,39 @@
         };
 
         let isOpen = false;
+        const gate = document.getElementById('chat-gate');
+        const gateForm = document.getElementById('gate-form');
 
         function toggleChat() {
             isOpen = !isOpen;
             refs.window.classList.toggle('hidden', !isOpen);
             refs.window.classList.toggle('flex', isOpen);
             refs.icon.innerText = isOpen ? 'keyboard_arrow_down' : 'forum';
-            if (isOpen) refs.input.focus();
+            
+            if (isOpen) {
+                const lead = localStorage.getItem('kat-lead');
+                if (!lead) gate.classList.remove('hidden');
+                else refs.input.focus();
+            }
         }
+
+        gateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('gate-name').value;
+            const email = document.getElementById('gate-email').value;
+            localStorage.setItem('kat-lead', JSON.stringify({ name, email }));
+            gate.style.opacity = '0';
+            setTimeout(() => { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
+            
+            // Log entry lead
+            fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName: name, email, subject: 'Phòng làm việc Entry', isChatSummary: true })
+            }).catch(() => {});
+            
+            refs.input.focus();
+        });
 
         refs.toggle.addEventListener('click', toggleChat);
         refs.close.addEventListener('click', toggleChat);
@@ -1002,8 +1045,21 @@
 
                 const result = await res.json();
                 if (res.ok) {
-                    status.innerText = 'Cảm ơn chị! Elise đã nhận được thông tin và sẽ phản hồi sớm nhất qua email.';
-                    status.classList.replace('text-[#C05C3F]', 'text-primary');
+                    status.innerHTML = `
+                        <div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                BẠN ĐÃ HOÀN THÀNH FORM SUBMIT THÀNH CÔNG!
+                            </div>
+                            <p class="text-xs text-on-surface/70 leading-relaxed mb-4">
+                                Thông tin đã được chuyển thẳng tới Elise. Bạn có muốn nhận email xác nhận thời gian đặt lịch ngay lập tức không?
+                            </p>
+                            <div class="flex gap-2">
+                                <button onclick="window.confirmFollowUp(true)" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">Có, gửi ngay</button>
+                                <button onclick="window.confirmFollowUp(false)" class="flex-1 border border-primary/30 text-primary py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary/5 transition-all">Để sau</button>
+                            </div>
+                        </div>
+                    `;
                     form.reset();
                 } else {
                     throw new Error(result.error || 'Giao dịch không thành công');
@@ -1016,6 +1072,15 @@
                 btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
             }
         });
+
+        window.confirmFollowUp = (confirm) => {
+            const status = document.getElementById('formStatus');
+            if (confirm) {
+                status.innerHTML = '<div class="bg-[#FCF9F4] p-4 rounded-xl text-[#C05C3F] text-xs font-bold flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#C05C3F] animate-ping"></span> Yêu cầu đã được gửi! Elise sẽ email cho Bạn ngay.</div>';
+            } else {
+                status.style.display = 'none';
+            }
+        };
     })();
 </script>
 
