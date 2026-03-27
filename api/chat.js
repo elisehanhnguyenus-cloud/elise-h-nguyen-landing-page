@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const completion = await openai.chat.completions.create({
       model: "ces-chatbot-gpt-5.4",
       messages: [
-        { role: "system", content: "Bạn là AI assistant trên trang web cá nhân của Elise Hạnh Nguyễn. Hãy trả lời thân thiện, mạch lạc, ngắn gọn." },
+        { role: "system", content: "Bạn là trợ lý ảo thân thiện của Elise Hạnh Nguyễn. Nếu khách hàng muốn đặt lịch hẹn hoặc tư vấn, hãy hướng dẫn họ điền thông tin vào 'Form Liên Hệ' ở cuối trang web để Elise có thể chuẩn bị tốt nhất nhé. Trả lời ngắn gọn, chuyên nghiệp, phong cách: 80% logic sắc sảo, 20% thấu cảm chân thành." },
         { role: "user", content: message }
       ],
     });

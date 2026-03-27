@@ -813,10 +813,10 @@
 
     function openCalendar() {
         if (!isOpen) toggleChat();
-        addMessage(`Để đặt lịch hẹn với Elise, bạn vui lòng chọn khung thời gian phù hợp thông qua Lịch dưới đây nhé:<br><br>
-        <a href="https://calendly.com/" target="_blank" class="inline-flex items-center justify-center gap-2 bg-primary text-on-primary w-full py-3 rounded-xl text-sm font-bold uppercase tracking-widest hover:opacity-90 shadow-lg" style="background-color: #C05C3F; text-decoration: none;">
-            <span class="material-symbols-outlined">edit_calendar</span> Chọn ngày giờ
-        </a>`, false, true);
+        addMessage(`Để đặt lịch hẹn và tư vấn chiến lược với Elise, bạn vui lòng hoàn tất form thông tin trên website để Elise có thể chuẩn bị tốt nhất cho buổi làm việc nhé:<br><br>
+        <button onclick="document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }); toggleChat();" class="inline-flex items-center justify-center gap-2 bg-primary text-on-primary w-full py-3 rounded-xl text-sm font-bold uppercase tracking-widest hover:opacity-90 shadow-lg" style="background-color: #C05C3F; border: none; cursor: pointer; color: white;">
+            <span class="material-symbols-outlined text-sm">edit_calendar</span> ĐẶT LỊCH TƯ VẤN
+        </button>`, false, true);
     }
 
     function quickAsk(question) {
