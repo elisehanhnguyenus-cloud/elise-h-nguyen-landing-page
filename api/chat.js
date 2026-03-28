@@ -1,27 +1,17 @@
-import OpenAI from 'openai';
+export const config = {
+  runtime: 'edge',
+};
 
-const openai = new OpenAI({
-  apiKey: process.env.CUSTOM_OPENAI_API_KEY || "sk-4bd27113b7dc78d1-lh6jld-f4f9c69f",
-  baseURL: process.env.CUSTOM_OPENAI_BASE_URL || "https://9router.vuhai.io.vn/v1",
-});
-
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return new Response(JSON.stringify({ message: 'Method not allowed' }), { status: 405 });
   }
-
-  const { message, history, lead } = req.body;
-
-  if (!message) {
-    return res.status(400).json({ message: 'Message is required' });
-  }
-
-  const userInfo = lead ? `\n\nKHÁCH HÀNG: ${lead.name || 'Bạn'} - Email: ${lead.email || 'N/A'}` : '';
 
   try {
-    const systemPrompt = { 
-      role: "system", 
-      content: `BẠN LÀ KAT - TRỢ LÝ CONCIERGE ADVISOR của Elise Hạnh Nguyễn.
+    const { message, history, lead } = await req.json();
+    const userInfo = lead ? `\nBỐI CẢNH KHÁCH HÀNG: ${JSON.stringify(lead)}` : "";
+
+    const systemPrompt = `BẠN LÀ KAT - TRỢ LÝ CONCIERGE ADVISOR của Elise Hạnh Nguyễn.
 DNA: Sang trọng, thâm thúy, xưng "Kat" gọi "Bạn". Tư duy "Less is More" - ngắn gọn nhưng sắc sảo.
 
 QUY TRÌNH TƯ VẤN (TỐI ĐA 5 BƯỚC):
@@ -44,32 +34,77 @@ QUY TẮC UI/UX CỨNG:
 - Tuyệt đối không lỗi chính tả, không bong bóng rỗng.
 - KHÔNG LẶP LẠI CÂU HỎI ĐÃ CÓ TRONG LỊCH SỬ.
 
-THÔNG TIN ELISE:${userInfo}`
-    };
+THÔNG TIN ELISE:${userInfo}`;
 
-    const messages = [systemPrompt, ...(history || [])];
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...(history || [])
+    ];
 
-    const stream = await openai.chat.completions.create({
-      model: "ces-chatbot-gpt-5.4",
-      messages: messages,
-      stream: true,
+    const response = await fetch("https://9router.vuhai.io.vn/v1/chat/completions", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer sk-4bd27113b7dc78d1-lh6jld-f4f9c69f`, // Using provided key
+      },
+      body: JSON.stringify({
+        model: "ces-chatbot-gpt-5.4",
+        messages: messages,
+        stream: true,
+      }),
     });
 
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    });
-
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) {
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
-      }
+    if (!response.ok) {
+      const errData = await response.text();
+      console.error("Upstream Error:", errData);
+      return new Response(JSON.stringify({ error: "Upstream failed" }), { status: 500 });
     }
-    res.end();
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = response.body.getReader();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.trim() === "data: [DONE]") continue;
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                const content = data.choices[0]?.delta?.content || "";
+                if (content) {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
+                }
+              } catch (e) {
+                // Skip malformed chunks
+              }
+            }
+          }
+        }
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Terminal Error:", error);
+    return new Response(JSON.stringify({ message: "Internal Error" }), { status: 500 });
   }
 }
