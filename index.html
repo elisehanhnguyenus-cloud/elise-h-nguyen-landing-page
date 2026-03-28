@@ -653,29 +653,28 @@
         </div>
 
         <!-- Right Column: Form -->
-        <div class="bg-[#F9F7F4] p-10 md:p-12 rounded-2xl">
-            <form id="leadForm" class="space-y-6">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
+        <div class="bg-[#F9F7F4] p-8 md:p-10 rounded-2xl">
+            <form id="leadForm" class="space-y-4 md:space-y-5">
+                <div class="grid md:grid-cols-2 gap-4 md:gap-5">
+                    <div class="space-y-1.5">
                         <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Full Name</label>
-                        <input id="fullName" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Johnathan Smith" type="text"/>
+                        <input id="fullName" required class="w-full bg-white border-0 rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Johnathan Smith" type="text"/>
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-1.5">
                         <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Company</label>
-                        <input id="company" class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Enterprise Corp" type="text"/>
+                        <input id="company" class="w-full bg-white border-0 rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="Enterprise Corp" type="text"/>
                     </div>
                 </div>
                 
-                <div class="space-y-2">
-                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Email Address</label>
-                    <input id="email" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="jsmith@enterprise.com" type="email"/>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
+                <div class="grid md:grid-cols-2 gap-4 md:gap-5">
+                    <div class="space-y-1.5">
+                        <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Email Address</label>
+                        <input id="email" required class="w-full bg-white border-0 rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/30" placeholder="jsmith@enterprise.com" type="email"/>
+                    </div>
+                    <div class="space-y-1.5">
                         <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Inquiry Subject</label>
                         <div class="relative">
-                            <select id="subject" class="w-full bg-white border-0 rounded-lg px-5 py-4 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
+                            <select id="subject" class="w-full bg-white border-0 rounded-lg px-4 py-3 appearance-none focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background cursor-pointer">
                                 <option>Strategic Brand Advisory</option>
                                 <option>Copywriting & Narrative</option>
                                 <option>Publishing & Editorial</option>
@@ -685,38 +684,39 @@
                             <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 pointer-events-none">expand_more</span>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Preferred Date & Time</label>
-                        <input id="bookingDate" class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background" type="datetime-local"/>
-                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Brief Context</label>
+                    <textarea id="message" required class="w-full bg-white border-0 rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light resize-none text-on-background placeholder:text-on-surface-variant/30" placeholder="Please describe the nature of your requirement..." rows="2"></textarea>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Brief Context</label>
-                    <textarea id="message" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light resize-none text-on-background placeholder:text-on-surface-variant/30" placeholder="Please describe the nature of your requirement..." rows="4"></textarea>
-                </div>
-
-                <div class="space-y-4">
-                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Đính kèm tài liệu & Link kết nối (Tùy chọn)</label>
+                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold flex justify-between">
+                        <span>Đính kèm tài liệu & Link</span>
+                        <span class="font-normal opacity-70">Tùy chọn</span>
+                    </label>
                     
-                    <div class="space-y-2">
-                        <input id="portfolioLink" class="w-full bg-white border border-outline-variant/30 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/40" placeholder="Link CV, Portfolio, LinkedIn hoặc Google Drive..." type="url"/>
-                    </div>
-                    
-                    <div class="relative w-full bg-white border border-dashed border-outline-variant/40 rounded-lg px-5 py-4 flex items-center justify-center group hover:border-primary/50 transition-all">
-                        <input id="attachment" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="" accept=".pdf,.doc,.docx,.jpg,.png" />
-                        <div class="flex items-center gap-3 text-on-surface-variant/60 group-hover:text-primary transition-all pointer-events-none">
-                            <span class="material-symbols-outlined text-xl">upload_file</span>
-                            <span class="text-xs font-light" id="fileNameDisplay">Hoặc tải lên tệp đính kèm trực tiếp (PDF, DOCX)</span>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <input id="portfolioLink" class="w-full bg-white border border-outline-variant/30 rounded-lg px-4 py-3 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/40" placeholder="Link chia sẻ Drive/Portfolio..." type="url"/>
+                        </div>
+                        
+                        <div class="relative w-full bg-white border border-dashed border-outline-variant/40 rounded-lg px-4 py-3 flex items-center justify-center group hover:border-primary/50 transition-all">
+                            <input id="attachment" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="" accept=".pdf,.doc,.docx,.jpg,.png" />
+                            <div class="flex items-center gap-2 text-on-surface-variant/60 group-hover:text-primary transition-all pointer-events-none">
+                                <span class="material-symbols-outlined text-lg">upload_file</span>
+                                <span class="text-xs font-light truncate" id="fileNameDisplay" style="max-width: 180px;">Tải lên trực tiếp (PDF, DOCX)</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-4">
-                    <button id="submitBtn" class="w-full py-4 bg-inverse-surface text-surface rounded-lg font-bold uppercase tracking-[0.2em] text-xs hover:opacity-90 transition-all" type="submit">
+                <div class="pt-2">
+                    <button id="submitBtn" class="w-full py-3.5 bg-inverse-surface text-surface rounded-lg font-bold uppercase tracking-[0.2em] text-xs hover:opacity-90 transition-all" type="submit">
                         GỬI YÊU CẦU TƯ VẤN
                     </button>
-                    <p id="formStatus" class="mt-4 text-xs text-center font-label tracking-wide hidden"></p>
+                    <p id="formStatus" class="mt-3 text-xs text-center font-label tracking-wide hidden"></p>
                 </div>
             </form>
         </div>
