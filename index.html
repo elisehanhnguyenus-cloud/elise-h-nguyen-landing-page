@@ -854,8 +854,22 @@
         function formatContent(html) {
             if (!html) return '';
             
-            // Protect Notion tags from breaking
+            // Protect Notion tags from breaking, remove from UI
             html = html.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
+            if (!html.trim()) return '';
+
+            // Details/Summary: [DETAILS:Title]Content[/DETAILS]
+            html = html.replace(/\[DETAILS:(.*?)\](.*?)\[\/DETAILS\]/gs, (match, title, content) => {
+                return `<details class="bg-[#C05C3F]/5 border border-[#C05C3F]/10 rounded-xl p-3 mb-4 cursor-pointer group transition-all">
+                    <summary class="font-bold text-[#C05C3F] text-[11px] uppercase tracking-wider flex items-center justify-between list-none">
+                        ${title.trim()}
+                        <span class="material-symbols-outlined text-sm group-open:rotate-180 transition-transform">expand_more</span>
+                    </summary>
+                    <div class="mt-3 text-sm leading-relaxed text-[#555] border-t border-[#C05C3F]/10 pt-3">
+                        ${content.trim().replace(/\n/g, '<br>')}
+                    </div>
+                </details>`;
+            });
 
             // Folders: [FOLDER] Title
             html = html.replace(/\[FOLDER\](.*?)(?=\n|<br>|$)/g, (match, title) => {
@@ -870,7 +884,7 @@
             
             // Quick Reply Buttons: [BTN:Label]
             html = html.replace(/\[BTN:(.*?)\]/g, (match, label) => {
-                const isAction = /Đặt lịch|Gửi yêu cầu|Contact|Tư vấn/i.test(label);
+                const isAction = /Đặt lịch|Gửi yêu cầu|Tư vấn|Clarity|Contact/i.test(label);
                 const onclick = isAction 
                     ? "window.handleChatAction('calendar')" 
                     : `window.submitQuickReply('${label.trim().replace(/'/g, "\\'")}')`;
