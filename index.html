@@ -718,7 +718,7 @@
 </div>
 <p class="font-label text-xs tracking-widest uppercase text-on-surface-variant/60" style="">© 2024 ELISE H. NGUYEN. BUILT TO LAST.</p>
 </div>
-<div class=<!-- Chatbot UI Section -->
+<!-- Chatbot UI Section -->
 <div id="chatbot-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end font-body">
     <div id="chat-window" class="hidden w-[380px] max-w-[90vw] mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[600px] max-h-[85vh] animate-fade-in">
         <!-- Header -->
@@ -815,6 +815,7 @@
         };
 
         let isOpen = false;
+        let chatHistory = [];
         const gate = document.getElementById('chat-gate');
         const gateForm = document.getElementById('gate-form');
 
@@ -839,7 +840,6 @@
             gate.style.opacity = '0';
             setTimeout(() => { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
             
-            // Log entry lead
             fetch('/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -854,12 +854,10 @@
 
         function formatContent(html) {
             if (!html) return '';
-            
-            // Protect Notion tags from breaking, remove from UI
             html = html.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
             if (!html.trim()) return '';
 
-            // Details/Summary: [DETAILS:Title]Content[/DETAILS]
+            // Details
             html = html.replace(/\[DETAILS:(.*?)\](.*?)\[\/DETAILS\]/gs, (match, title, content) => {
                 return `<details class="bg-[#C05C3F]/5 border border-[#C05C3F]/10 rounded-xl p-3 mb-4 cursor-pointer group transition-all">
                     <summary class="font-bold text-[#C05C3F] text-[11px] uppercase tracking-wider flex items-center justify-between list-none">
@@ -872,7 +870,7 @@
                 </details>`;
             });
 
-            // Folders: [FOLDER] Title
+            // Folder
             html = html.replace(/\[FOLDER\](.*?)(?=\n|<br>|$)/g, (match, title) => {
                 return `<div class="flex items-center gap-2 text-[#C05C3F] font-extrabold mb-3 bg-[#C05C3F]/5 p-3 rounded-xl border border-[#C05C3F]/10 shadow-sm">
                     <span class="material-symbols-outlined text-lg">folder_open</span>
@@ -880,159 +878,75 @@
                 </div>`;
             });
 
-            // Bold: **Text**
+            // Formatting
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-[#C05C3F]">$1</strong>');
-            
-            // Quick Reply Buttons: [BTN:Label]
+            html = html.replace(/### (.*)/g, '<h4 class="font-bold text-sm mt-4 mb-2 text-[#333] border-l-4 border-[#C05C3F] pl-3">$1</h4>');
+            html = html.replace(/^- (.*)/gm, '<div class="flex gap-2 mt-2 leading-relaxed"><span class="text-[#C05C3F]">●</span><span>$1</span></div>');
+
+            // Buttons
             html = html.replace(/\[BTN:(.*?)\]/g, (match, label) => {
                 const isAction = /Đặt lịch|Gửi yêu cầu|Tư vấn|Clarity|Contact/i.test(label);
-                const onclick = isAction 
-                    ? "window.handleChatAction('calendar')" 
-                    : `window.submitQuickReply('${label.trim().replace(/'/g, "\\'")}')`;
-                
-                return `<button onclick="${onclick}" class="inline-block m-1 px-4 py-2 bg-white border border-[#C05C3F]/30 text-[#C05C3F] rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-[#C05C3F] hover:text-white transition-all shadow-sm active:scale-95">
-                    ${label.trim()}
-                </button>`;
+                const onclick = isAction ? "window.handleChatAction('calendar')" : `window.submitQuickReply('${label.trim().replace(/'/g, "\\'")}')`;
+                return `<button onclick="${onclick}" class="inline-block m-1 px-4 py-2 bg-white border border-[#C05C3F]/30 text-[#C05C3F] rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-[#C05C3F] hover:text-white transition-all shadow-sm active:scale-95">${label.trim()}</button>`;
             });
-
-            // Headers
-            html = html.replace(/### (.*)/g, '<h4 class="font-bold text-sm mt-4 mb-2 text-[#333] border-l-4 border-[#C05C3F] pl-3">$1</h4>');
-            
-            // List items
-            html = html.replace(/^- (.*)/gm, '<div class="flex gap-2 mt-2 leading-relaxed"><span class="text-[#C05C3F]">●</span><span>$1</span></div>');
 
             return html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
         }
 
-        window.submitQuickReply = (text) => {
-            refs.input.value = text;
-            refs.form.dispatchEvent(new Event('submit'));
-        };
-
-        window.handleChatAction = (type) => {
-            const actions = {
-                calendar: () => {
-                    document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-                    if (isOpen) toggleChat();
-                },
-                services: () => window.submitQuickReply('Cho tôi biết về các dịch vụ của Elise'),
-                handmade: () => window.submitQuickReply('Kể chuyện bản sắc & Go Global'),
-                marcom: () => window.submitQuickReply('Professional Mentoring')
-            };
-            if (actions[type]) actions[type]();
-        };
-
-        function addBubble(text, isUser = false, isHtml = false) {
+        function addBubble(text, isUser = false, isRaw = false) {
             const wrap = document.createElement('div');
             wrap.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'} bubble-in mb-4`;
-            
             const b = document.createElement('div');
-            b.className = isUser 
-                ? 'bg-[#C05C3F] text-white p-4 rounded-2xl rounded-tr-sm max-w-[85%] leading-relaxed text-sm shadow-md font-medium' 
-                : 'bg-white text-[#333] p-4 rounded-2xl rounded-tl-sm max-w-[85%] leading-relaxed text-sm shadow-sm border border-outline-variant/10';
-            
-            b.innerHTML = isHtml ? text : formatContent(text);
+            b.className = isUser ? 'bg-[#C05C3F] text-white p-4 rounded-2xl rounded-tr-sm max-w-[85%] leading-relaxed text-sm shadow-md font-medium' : 'bg-white text-[#333] p-4 rounded-2xl rounded-tl-sm max-w-[85%] leading-relaxed text-sm shadow-sm border border-outline-variant/10';
+            b.innerHTML = isRaw ? text : formatContent(text);
             wrap.appendChild(b);
             refs.messages.appendChild(wrap);
             refs.messages.scrollTop = refs.messages.scrollHeight;
             return b;
         }
 
-        refs.form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const msg = refs.input.value.trim();
-            if (!msg) return;
-
-            addBubble(msg, true);
-            chatHistory.push({ role: "user", content: msg });
-            if (chatHistory.length > 20) chatHistory.shift();
-
-            refs.input.value = '';
-            refs.input.style.height = 'auto';
-
-            const tId = 't-' + Date.now();
-            const typing = document.createElement('div');
-            typing.id = tId;
-            typing.className = 'flex justify-start mb-4 animate-pulse';
-            typing.innerHTML = '<div class="bg-white/50 p-3 rounded-2xl flex gap-1"><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span></div>';
-            refs.messages.appendChild(typing);
-            refs.messages.scrollTop = refs.messages.scrollHeight;
+        async function processChat(text) {
+            if (!text || refs.window.querySelector('.typing-indicator')) return;
+            addBubble(text, true);
+            chatHistory.push({ role: "user", content: text });
+            
+            const typingWrap = addBubble('<div class="typing-indicator flex gap-1"><span class="typing-dot"></span><span class="typing-dot" style="animation-delay:0.2s"></span><span class="typing-dot" style="animation-delay:0.4s"></span></div>', false, true);
+            let aiBubble = null;
+            let fullAiContent = '';
 
             try {
-                const res = await fetch('/api/chat', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: msg,
-                        history: chatHistory,
-                        lead: JSON.parse(localStorage.getItem('kat-lead') || '{}')
-                    })
+                    body: JSON.stringify({ message: text, history: chatHistory, lead: JSON.parse(localStorage.getItem('kat-lead') || '{}') })
                 });
 
-                if (!res.ok) throw new Error('Network error');
-
-                const reader = res.body.getReader();
+                if (!response.ok) throw new Error('Failed');
+                const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                let aiBubble = null;
-                let fullAiContent = '';
-                let hasReceivedContent = false;
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
                     const chunk = decoder.decode(value);
                     const lines = chunk.split('\n');
-                    
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {
                                 const data = JSON.parse(line.slice(6));
-                                let content = data.content || '';
-                                
-                                if (content) {
-                                    if (!hasReceivedContent) {
-                                        document.getElementById(tId)?.remove();
-                                        aiBubble = addBubble("", false, true);
-                                        hasReceivedContent = true;
+                                if (data.content) {
+                                    if (!aiBubble) {
+                                        typingWrap.parentElement.remove();
+                                        aiBubble = addBubble('', false, true);
                                     }
-
-                                    fullAiContent += content;
+                                    fullAiContent += data.content;
                                     aiBubble.innerHTML = formatContent(fullAiContent);
                                     refs.messages.scrollTop = refs.messages.scrollHeight;
-
-                                    // Check for Notion Tags
-                                    if (content.includes('[SAVE_TO_NOTION:')) {
-                                        const match = content.match(/\[SAVE_TO_NOTION:(.*?)\]/);
-                                        if (match) {
-                                            const lead = JSON.parse(localStorage.getItem('kat-lead') || '{}');
-                                            fetch('/api/leads', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ ...lead, message: match[1], isChatSummary: true })
-                                            }).catch(() => {});
-                                            content = content.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
-                                        }
-                                    }
-
-                                    buffer += content;
-                                    if (buffer.includes('[BREAK]')) {
-                                        const parts = buffer.split('[BREAK]');
-                                        aiBubble.innerHTML = formatContent(parts[0].trim());
-                                        buffer = parts.slice(1).join('[BREAK]').trim();
-                                        if (!done) aiBubble = addBubble("", false, true);
-                                    } else {
-                                        if (buffer.trim()) aiBubble.innerHTML = formatContent(buffer);
-                                    }
-                                    refs.messages.scrollTop = refs.messages.scrollHeight;
                                 }
-                            } catch (e) { /* console.error("Error parsing SSE data:", e); */ }
+                            } catch (e) {}
                         }
                     }
                 }
-                if (!buffer.trim() && !aiBubble.innerText.trim()) aiBubble.remove();
-            } catch (err) {
-                document.getElementById(tId)?.remove();
                 addBubble('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
             } finally {
                 refs.input.disabled = false;
