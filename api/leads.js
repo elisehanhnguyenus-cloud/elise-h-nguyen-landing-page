@@ -1,10 +1,11 @@
+import { put } from '@vercel/blob';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { fullName, email, company, subject, bookingDate, message, isChatSummary, summary, niche, priority } = req.body;
+  const { fullName, email, company, subject, bookingDate, message, isChatSummary, summary, niche, priority, portfolioLink, attachment } = req.body;
   const NOTION_TOKEN = process.env.NOTION_SECRET;
   const DATABASE_ID = '3308ed608af9804c8401c5599ef4f556';
 
@@ -13,10 +14,31 @@ export default async function handler(req, res) {
   }
 
   try {
+    let uploadedFileUrl = '';
+
+    // Upload file to Vercel Blob if attachment exists
+    if (attachment && attachment.data && attachment.name) {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+         console.warn("BLOB_READ_WRITE_TOKEN is missing. Skipping file upload.");
+      } else {
+         const fileBuffer = Buffer.from(attachment.data, 'base64');
+         const blob = await put(`leads/${Date.now()}_${attachment.name}`, fileBuffer, {
+            access: 'public',
+            contentType: attachment.contentType || 'application/octet-stream',
+         });
+         uploadedFileUrl = blob.url;
+      }
+    }
+
+    // Append link and file to message
+    let extraContext = '';
+    if (portfolioLink) extraContext += `\n\nLink Portfolio/CV: ${portfolioLink}`;
+    if (uploadedFileUrl) extraContext += `\n\nTệp đính kèm: ${uploadedFileUrl}`;
+
     // If it's a chat summary, we map the fields to Notion properties
     const finalName = fullName || 'Chat Assistant Lead';
     const finalSubject = subject || niche || 'Chat Inquiry';
-    const finalMessage = message || summary || 'No details provided';
+    const finalMessage = (message || summary || 'No details provided') + extraContext;
     const finalCompany = company || (priority ? `Priority: ${priority}` : '');
 
     const properties = {
@@ -33,7 +55,7 @@ export default async function handler(req, res) {
         select: { name: (['Consulting', 'AI Automation', 'Storytelling', 'Other'].includes(finalSubject)) ? finalSubject : 'Other' }
       },
       'Message': {
-        rich_text: [{ text: { content: `[CHAT SUMMARY] ${finalMessage}` } }]
+        rich_text: [{ text: { content: `[CHAT SUMMARY] ${finalMessage}`.substring(0, 1990) } }]
       }
     };
 

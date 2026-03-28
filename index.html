@@ -696,6 +696,22 @@
                     <textarea id="message" required class="w-full bg-white border-0 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light resize-none text-on-background placeholder:text-on-surface-variant/30" placeholder="Please describe the nature of your requirement..." rows="4"></textarea>
                 </div>
 
+                <div class="space-y-4">
+                    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold">Đính kèm tài liệu & Link kết nối (Tùy chọn)</label>
+                    
+                    <div class="space-y-2">
+                        <input id="portfolioLink" class="w-full bg-white border border-outline-variant/30 rounded-lg px-5 py-4 focus:ring-1 focus:ring-primary/20 transition-all text-sm font-light text-on-background placeholder:text-on-surface-variant/40" placeholder="Link CV, Portfolio, LinkedIn hoặc Google Drive..." type="url"/>
+                    </div>
+                    
+                    <div class="relative w-full bg-white border border-dashed border-outline-variant/40 rounded-lg px-5 py-4 flex items-center justify-center group hover:border-primary/50 transition-all">
+                        <input id="attachment" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="" accept=".pdf,.doc,.docx,.jpg,.png" />
+                        <div class="flex items-center gap-3 text-on-surface-variant/60 group-hover:text-primary transition-all pointer-events-none">
+                            <span class="material-symbols-outlined text-xl">upload_file</span>
+                            <span class="text-xs font-light" id="fileNameDisplay">Hoặc tải lên tệp đính kèm trực tiếp (PDF, DOCX)</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="pt-4">
                     <button id="submitBtn" class="w-full py-4 bg-inverse-surface text-surface rounded-lg font-bold uppercase tracking-[0.2em] text-xs hover:opacity-90 transition-all" type="submit">
                         GỬI YÊU CẦU TƯ VẤN
@@ -718,6 +734,23 @@
 </div>
 <p class="font-label text-xs tracking-widest uppercase text-on-surface-variant/60" style="">© 2024 ELISE H. NGUYEN. BUILT TO LAST.</p>
 </div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">Privacy Policy</a>
+<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="#" style="">Terms of Service</a>
+<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="https://www.linkedin.com/in/elisehanhnguyen/" target="_blank" style="">LinkedIn</a>
+<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="https://www.facebook.com/nudoanhnhanelise?mibextid=LQQJ4d" target="_blank" style="">Facebook</a>
+<a class="text-on-surface-variant/60 hover:text-primary transition-colors font-label text-xs tracking-widest uppercase" href="https://www.instagram.com/elise.hanhnguyen/" target="_blank" style="">Instagram</a>
+</div>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="https://www.facebook.com/nudoanhnhanelise?mibextid=LQQJ4d" target="_blank" style="">
+<span class="material-symbols-outlined text-sm" data-icon="link" style="">link</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="mailto:elisehanhnguyenus@gmail.com" style="">
+<span class="material-symbols-outlined text-sm" data-icon="mail" style="">mail</span>
+</a>
+</div>
+</div>
+</footer>
 <!-- Chatbot UI Section -->
 <div id="chatbot-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end font-body">
     <div id="chat-window" class="hidden w-[380px] max-w-[90vw] mb-4 bg-surface rounded-2xl shadow-2xl border border-outline-variant/30 flex-col overflow-hidden transition-all h-[600px] max-h-[85vh] animate-fade-in">
@@ -996,36 +1029,27 @@
         }, 1200);
     })();
 </script>
-                         refs.messages.scrollTop = refs.messages.scrollHeight;
-                                }
-                            } catch (e) {}
-                        }
-                    }
-                }
-                addBubble('Xin lỗi, Elise gặp chút gián đoạn. Chị vui lòng thử lại nhé.', false);
-            } finally {
-                refs.input.disabled = false;
-                refs.submit.disabled = false;
-                refs.input.focus();
-                // Final scroll safety
-                setTimeout(() => {
-                    refs.messages.scrollTop = refs.messages.scrollHeight;
-                }, 100);
-            }
-        });
-
-        // Initial Greeting
-        setTimeout(() => {
-            addBubble(`Chào mừng Bạn đến với __Phòng làm việc của Elise Hạnh Nguyễn__. Em là **Kat** - trợ lý Concierge Advisor. Chúng ta có thể đồng hành qua 4 trụ cột của chị Elise:<br><br>1. **Strategy & Go Global**: Tư vấn chiến lược SMEs.<br>2. **AI Automation**: Hệ thống hóa sáng tạo.<br>3. **Professional Mentoring**: Marcom/Copywriter.<br>4. **Brand Clarity Call 1:1**: Bóc tách bản sắc thương hiệu.<br><br>Để **Kat có thể** hỗ trợ đúng trọng tâm nhất, Bạn thuộc nhóm nào dưới đây?<br><br>[BTN:Shop Handmade / SME] [BTN:Leader / Chuyên gia] [BTN:Junior / Mid-Senior] [BTN:Khác]`, false);
-        }, 1200);
-    })();
-</script>
 
 <!-- Lead Management Logic -->
 <script>
     (function() {
         const form = document.getElementById('leadForm');
         if (!form) return;
+
+        // Custom File Input Display
+        const attachment = document.getElementById('attachment');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        if (attachment && fileNameDisplay) {
+            attachment.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    fileNameDisplay.innerText = e.target.files[0].name;
+                    fileNameDisplay.classList.add('text-primary', 'font-medium');
+                } else {
+                    fileNameDisplay.innerText = 'Gợi ý: CV, Portfolio hoặc Catalog/Proposal của bạn';
+                    fileNameDisplay.classList.remove('text-primary', 'font-medium');
+                }
+            });
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1038,13 +1062,39 @@
             status.className = 'text-xs mt-4 block text-[#C05C3F] italic font-medium';
             status.style.display = 'block';
 
+            let fileData = null;
+            let fileName = null;
+            let fileContentType = null;
+
+            if (attachment && attachment.files.length > 0) {
+                const file = attachment.files[0];
+                if (file.size > 4.5 * 1024 * 1024) {
+                    status.innerText = 'Lỗi: Tệp tin quá lớn (>4.5MB). Vui lòng gửi qua Google Drive Link ở ô bên trên.';
+                    status.classList.replace('text-[#C05C3F]', 'text-error');
+                    btn.disabled = false;
+                    btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
+                    return;
+                }
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+                fileData = base64;
+                fileName = file.name;
+                fileContentType = file.type;
+            }
+
             const data = {
                 fullName: document.getElementById('fullName').value,
                 company: document.getElementById('company').value,
                 email: document.getElementById('email').value,
                 subject: document.getElementById('subject').value,
                 bookingDate: document.getElementById('bookingDate').value,
-                message: document.getElementById('message').value
+                message: document.getElementById('message').value,
+                portfolioLink: document.getElementById('portfolioLink')?.value || '',
+                attachment: fileData ? { data: fileData, name: fileName, contentType: fileContentType } : null
             };
 
             try {
@@ -1150,4 +1200,4 @@
     })();
 </script>
 
-</body></html>
+</body></html>
