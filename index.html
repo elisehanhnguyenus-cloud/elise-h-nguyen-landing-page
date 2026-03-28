@@ -943,8 +943,11 @@
             if (!msg) return;
 
             addBubble(msg, true);
+            chatHistory.push({ role: "user", content: msg });
+            if (chatHistory.length > 20) chatHistory.shift();
+
             refs.input.value = '';
-            refs.input.style.height = 'auto'; // Reset height for textarea if it was one
+            refs.input.style.height = 'auto';
 
             const tId = 't-' + Date.now();
             const typing = document.createElement('div');
@@ -959,7 +962,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        message: msg, // Original message
+                        message: msg,
+                        history: chatHistory,
                         lead: JSON.parse(localStorage.getItem('kat-lead') || '{}')
                     })
                 });
@@ -969,8 +973,8 @@
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 let aiBubble = null;
-                let buffer = '';
-                let hasReceivedContent = false; // Flag to track if content has started arriving
+                let fullAiContent = '';
+                let hasReceivedContent = false;
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -991,6 +995,10 @@
                                         aiBubble = addBubble("", false, true);
                                         hasReceivedContent = true;
                                     }
+
+                                    fullAiContent += content;
+                                    aiBubble.innerHTML = formatContent(fullAiContent);
+                                    refs.messages.scrollTop = refs.messages.scrollHeight;
 
                                     // Check for Notion Tags
                                     if (content.includes('[SAVE_TO_NOTION:')) {

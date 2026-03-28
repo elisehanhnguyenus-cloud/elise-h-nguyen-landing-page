@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { message, lead } = req.body;
+  const { message, history, lead } = req.body;
 
   if (!message) {
     return res.status(400).json({ message: 'Message is required' });
@@ -19,12 +19,9 @@ export default async function handler(req, res) {
   const userInfo = lead ? `\n\nKHÁCH HÀNG: ${lead.name || 'Bạn'} - Email: ${lead.email || 'N/A'}` : '';
 
   try {
-    const stream = await openai.chat.completions.create({
-      model: "ces-chatbot-gpt-5.4",
-      messages: [
-        { 
-          role: "system", 
-          content: `BẠN LÀ KAT - TRỢ LÝ CONCIERGE ADVISOR của Elise Hạnh Nguyễn.
+    const systemPrompt = { 
+      role: "system", 
+      content: `BẠN LÀ KAT - TRỢ LÝ CONCIERGE ADVISOR của Elise Hạnh Nguyễn.
 DNA: Sang trọng, thâm thúy, xưng "Kat" gọi "Bạn". Tư duy "Less is More" - ngắn gọn nhưng sắc sảo.
 
 QUY TRÌNH TƯ VẤN (TỐI ĐA 5 BƯỚC):
@@ -45,11 +42,16 @@ QUY TẮC UI/UX CỨNG:
 - Nút bấm: Luôn kèm [BTN:Đặt lịch tư vấn 1:1] hoặc [BTN:Gửi yêu cầu chi tiết] ở cuối các phản hồi (đặc biệt từ bước 3).
 - Lưu trữ: [SAVE_TO_NOTION: Nội dung tóm tắt phiên chat và bối cảnh khách hàng] khi đã đủ thông tin.
 - Tuyệt đối không lỗi chính tả, không bong bóng rỗng.
+- KHÔNG LẶP LẠI CÂU HỎI ĐÃ CÓ TRONG LỊCH SỬ.
 
 THÔNG TIN ELISE:${userInfo}`
-        },
-        { role: "user", content: message }
-      ],
+    };
+
+    const messages = [systemPrompt, ...(history || [])];
+
+    const stream = await openai.chat.completions.create({
+      model: "ces-chatbot-gpt-5.4",
+      messages: messages,
       stream: true,
     });
 
