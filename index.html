@@ -800,7 +800,6 @@
     @keyframes bubbleIn { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 </style>
 
-<!-- Chatbot Implementation -->
 <script>
     (function() {
         const refs = {
@@ -814,6 +813,8 @@
             submit: document.getElementById('chat-submit')
         };
 
+        if (!refs.toggle || !refs.window) return;
+
         let isOpen = false;
         let chatHistory = [];
         const gate = document.getElementById('chat-gate');
@@ -823,39 +824,47 @@
             isOpen = !isOpen;
             refs.window.classList.toggle('hidden', !isOpen);
             refs.window.classList.toggle('flex', isOpen);
-            refs.icon.innerText = isOpen ? 'keyboard_arrow_down' : 'forum';
+            if (refs.icon) refs.icon.innerText = isOpen ? 'keyboard_arrow_down' : 'forum';
             
             if (isOpen) {
                 const lead = localStorage.getItem('kat-lead');
-                if (!lead) gate.classList.remove('hidden');
-                else refs.input.focus();
+                if (!lead && gate) gate.classList.remove('hidden');
+                else if (refs.input) refs.input.focus();
             }
         }
 
-        gateForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('gate-name').value;
-            const email = document.getElementById('gate-email').value;
-            localStorage.setItem('kat-lead', JSON.stringify({ name, email }));
-            gate.style.opacity = '0';
-            setTimeout(() => { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
-            
-            fetch('/api/leads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName: name, email, subject: 'Phòng làm việc Entry', isChatSummary: true })
-            }).catch(() => {});
-            
-            refs.input.focus();
-        });
+        if (gateForm) {
+            gateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nameInp = document.getElementById('gate-name');
+                const emailInp = document.getElementById('gate-email');
+                if (!nameInp || !emailInp) return;
+                
+                const name = nameInp.value;
+                const email = emailInp.value;
+                localStorage.setItem('kat-lead', JSON.stringify({ name, email }));
+                
+                if (gate) {
+                    gate.style.opacity = '0';
+                    setTimeout(() => { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
+                }
+                
+                fetch('/api/leads', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName: name, email, subject: 'Phòng làm việc Entry', isChatSummary: true })
+                }).catch(() => {});
+                
+                if (refs.input) refs.input.focus();
+            });
+        }
 
         refs.toggle.addEventListener('click', toggleChat);
-        refs.close.addEventListener('click', toggleChat);
+        if (refs.close) refs.close.addEventListener('click', toggleChat);
 
         function formatContent(html) {
             if (!html) return '';
             html = html.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
-            if (!html.trim()) return '';
 
             // Details
             html = html.replace(/\[DETAILS:(.*?)\](.*?)\[\/DETAILS\]/gs, (match, title, content) => {
@@ -894,6 +903,7 @@
         }
 
         function addBubble(text, isUser = false, isRaw = false) {
+            if (!refs.messages) return;
             const wrap = document.createElement('div');
             wrap.className = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'} bubble-in mb-4`;
             const b = document.createElement('div');
@@ -906,13 +916,13 @@
         }
 
         async function processChat(text) {
-            if (!text || refs.window.querySelector('.typing-indicator')) return;
+            if (!text || (refs.window && refs.window.querySelector('.typing-indicator'))) return;
             addBubble(text, true);
             chatHistory.push({ role: "user", content: text });
             
             const typingWrap = addBubble('<div class="typing-indicator flex gap-1"><span class="typing-dot"></span><span class="typing-dot" style="animation-delay:0.2s"></span><span class="typing-dot" style="animation-delay:0.4s"></span></div>', false, true);
             let aiBubble = null;
-            let fullAiContent = '';
+            let fullAiContent = "";
 
             try {
                 const response = await fetch('/api/chat', {
@@ -936,12 +946,57 @@
                                 const data = JSON.parse(line.slice(6));
                                 if (data.content) {
                                     if (!aiBubble) {
-                                        typingWrap.parentElement.remove();
+                                        if (typingWrap && typingWrap.parentElement) typingWrap.parentElement.remove();
                                         aiBubble = addBubble('', false, true);
                                     }
                                     fullAiContent += data.content;
                                     aiBubble.innerHTML = formatContent(fullAiContent);
                                     refs.messages.scrollTop = refs.messages.scrollHeight;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                chatHistory.push({ role: "assistant", content: fullAiContent });
+            } catch (err) {
+                if (typingWrap && typingWrap.parentElement) typingWrap.parentElement.remove();
+                addBubble("Em gặp chút gián đoạn kết nối. Bạn vui lòng thử lại nhé.");
+            } finally {
+                if (refs.input) refs.input.disabled = false;
+                if (refs.submit) refs.submit.disabled = false;
+                if (refs.input) refs.input.focus();
+            }
+        }
+
+        if (refs.form) {
+            refs.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = refs.input.value.trim();
+                if (msg) {
+                    refs.input.value = '';
+                    processChat(msg);
+                }
+            });
+        }
+
+        window.submitQuickReply = (text) => processChat(text);
+        window.handleChatAction = (type) => {
+            if (type === 'calendar') {
+                const contactEl = document.getElementById('contact');
+                if (contactEl) contactEl.scrollIntoView({ behavior: 'smooth' });
+                if (isOpen) toggleChat();
+            } else if (type === 'services') {
+                window.submitQuickReply('Cho tôi biết về các dịch vụ của Elise');
+            }
+        };
+
+        // Welcome
+        setTimeout(() => {
+            addBubble(`Chào mừng Bạn đến với __Phòng làm việc của Elise Hạnh Nguyễn__. Em là **Kat** - trợ lý Concierge Advisor. Chúng ta có thể đồng hành qua 4 trụ cột của chị Elise:<br><br>1. **Strategy & Go Global**: Tư vấn chiến lược SMEs.<br>2. **AI Automation**: Hệ thống hóa sáng tạo.<br>3. **Professional Mentoring**: Marcom/Copywriter.<br>4. **Brand Clarity Call 1:1**: Bóc tách bản sắc thương hiệu.<br><br>Để **Kat có thể** hỗ trợ đúng trọng tâm nhất, Bạn thuộc nhóm nào dưới đây?<br><br>[BTN:Shop Handmade / SME] [BTN:Leader / Chuyên gia] [BTN:Junior / Mid-Senior] [BTN:Khác]`, false);
+        }, 1200);
+    })();
+</script>
+                         refs.messages.scrollTop = refs.messages.scrollHeight;
                                 }
                             } catch (e) {}
                         }
