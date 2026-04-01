@@ -1143,73 +1143,88 @@
                 if (contactEl) contactEl.scrollIntoView({ behavior: 'smooth' });
                 if (isOpen) toggleChat();
             } else if (type === 'services') {
-           form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var btn = document.getElementById('submitBtn');
-            var status = document.getElementById('formStatus');
-            var currentForm = form;
+                processChat("Tôi muốn tìm hiểu về các dịch vụ");
+            }
+        };
 
-            // Hiện trạng thái đang gửi
-            btn.disabled = true;
-            btn.innerText = 'ĐANG GỬI...';
-            status.innerHTML = '<span style="color:#C05C3F;font-size:12px;font-style:italic">⏳ Đang gửi thông tin…</span>';
-            status.style.display = 'block';
+        // ============================================================
+        // CONTACT FORM — Lead Capture từ Landing Page
+        // ============================================================
+        const contactForm = document.getElementById('leadForm');
+        const attachmentInp = document.getElementById('attachment');
+        
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var btn = document.getElementById('submitBtn');
+                var status = document.getElementById('formStatus');
+                var currentForm = contactForm;
 
-            // Bước 1: Thu thập dữ liệu đồng bộ
-            var fullName = document.getElementById('fullName').value;
-            var company = document.getElementById('company') ? document.getElementById('company').value : '';
-            var email = document.getElementById('email').value;
-            var subject = document.getElementById('subject') ? document.getElementById('subject').value : '';
-            var message = document.getElementById('message') ? document.getElementById('message').value : '';
-            var portfolioLink = document.getElementById('portfolioLink') ? document.getElementById('portfolioLink').value : '';
-            var bookingDate = document.getElementById('bookingDate') ? document.getElementById('bookingDate').value : '';
-            var attachmentName = (attachment && attachment.files && attachment.files.length > 0) ? attachment.files[0].name : '';
+                // Hiện trạng thái đang gửi
+                btn.disabled = true;
+                btn.innerText = 'ĐANG GỬI...';
+                if (status) {
+                    status.innerHTML = '<span style="color:#C05C3F;font-size:12px;font-style:italic">⏳ Đang gửi thông tin…</span>';
+                    status.style.display = 'block';
+                }
 
-            // Bước 2: formDetails đầy đủ (mọi trường kể cả link + file)
-            var formDetails = '[Contact Form]'
-                + '\nTên: ' + fullName
-                + '\nEmail: ' + email
-                + '\nCông ty: ' + (company || 'N/A')
-                + '\nChủ đề: ' + subject
-                + '\nNội dung: ' + message
-                + (portfolioLink ? '\nPortfolio/Link: ' + portfolioLink : '')
-                + (attachmentName ? '\nTệp đính kèm: ' + attachmentName : '')
-                + (bookingDate ? '\nNgày đặt lịch: ' + bookingDate : '');
+                // Bước 1: Thu thập dữ liệu
+                var fullName = document.getElementById('fullName').value;
+                var company = document.getElementById('company') ? document.getElementById('company').value : '';
+                var email = document.getElementById('email').value;
+                var subject = document.getElementById('subject') ? document.getElementById('subject').value : '';
+                var message = document.getElementById('message') ? document.getElementById('message').value : '';
+                var portfolioLink = document.getElementById('portfolioLink') ? document.getElementById('portfolioLink').value : '';
+                var attachmentName = (attachmentInp && attachmentInp.files && attachmentInp.files.length > 0) ? attachmentInp.files[0].name : '';
 
-            // Bước 3: Gửi dữ liệu ngầm (fire & forget)
-            window.setTimeout(function() {
-                try { sendLeadToGoogleSheets({ name: fullName, phone: '', email: email }, formDetails); } catch(ex) {}
-            }, 10);
-            window.setTimeout(function() {
-                try {
-                    var notionMessage = message
-                        + (portfolioLink ? '\n\nPortfolio/Link: ' + portfolioLink : '')
-                        + (attachmentName ? '\n\nTệp đính kèm: ' + attachmentName : '');
-                    fetch('/api/leads', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            fullName: fullName, company: company, email: email,
-                            subject: subject, message: notionMessage,
-                            portfolioLink: portfolioLink, bookingDate: bookingDate, attachment: null
-                        })
-                    });
-                } catch(ex) {}
-            }, 20);
+                // Bước 2: formDetails đầy đủ
+                var formDetails = '[Contact Form]'
+                    + '\nTên: ' + fullName
+                    + '\nEmail: ' + email
+                    + '\nCông ty: ' + (company || 'N/A')
+                    + '\nChủ đề: ' + subject
+                    + '\nNội dung: ' + message
+                    + (portfolioLink ? '\nPortfolio/Link: ' + portfolioLink : '')
+                    + (attachmentName ? '\nTệp đính kèm: ' + attachmentName : '');
 
-            // Bước 4: Hiện thành công NGAY LẬP TỨC
-            status.innerHTML = '<div style="background:#fdf8f5;padding:20px;border-radius:16px;border:1px solid #e8d5cc;margin-top:16px">'
-                + '<div style="color:#C05C3F;font-weight:bold;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✓ Gửi thông tin thành công!</div>'
-                + '<p style="font-size:12px;color:#555;line-height:1.8;margin:0">'
-                + 'Thông tin của anh/chị đã được ghi nhận đầy đủ.'
-                + (portfolioLink ? '<br>🔗 <strong>Link Portfolio</strong>: đã lưu.' : '')
-                + (attachmentName ? '<br>📎 <strong>Tệp đính kèm</strong>: <em>' + attachmentName + '</em> đã ghi nhận.' : '')
-                + '<br><br>Chị Elise sẽ phản hồi anh/chị qua email sớm nhất ạ.</p>'
-                + '</div>';
-            btn.disabled = false;
-            btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
-            currentForm.reset();
-        });
+                // Bước 3: Gửi dữ liệu ngầm (fire & forget)
+                window.setTimeout(function() {
+                    try { sendLeadToGoogleSheets({ name: fullName, phone: '', email: email }, formDetails); } catch(ex) {}
+                }, 10);
+                
+                window.setTimeout(function() {
+                    try {
+                        var notionMessage = message
+                            + (portfolioLink ? '\n\nPortfolio/Link: ' + portfolioLink : '')
+                            + (attachmentName ? '\n\nTệp đính kèm: ' + attachmentName : '');
+                        fetch('/api/leads', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                fullName: fullName, company: company, email: email,
+                                subject: subject, message: notionMessage,
+                                portfolioLink: portfolioLink, attachment: null
+                            })
+                        });
+                    } catch(ex) {}
+                }, 20);
+
+                // Bước 4: Hiện thành công
+                if (status) {
+                    status.innerHTML = '<div style="background:#fdf8f5;padding:20px;border-radius:16px;border:1px solid #e8d5cc;margin-top:16px">'
+                        + '<div style="color:#C05C3F;font-weight:bold;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✓ Gửi thông tin thành công!</div>'
+                        + '<p style="font-size:12px;color:#555;line-height:1.8;margin:0">'
+                        + 'Thông tin của anh/chị đã được ghi nhận đầy đủ.'
+                        + (portfolioLink ? '<br>🔗 <strong>Link Portfolio</strong>: đã lưu.' : '')
+                        + (attachmentName ? '<br>📎 <strong>Tệp đính kèm</strong>: <em>' + attachmentName + '</em> đã ghi nhận.' : '')
+                        + '<br><br>Chị Elise sẽ phản hồi anh/chị qua email sớm nhất ạ.</p>'
+                        + '</div>';
+                }
+                btn.disabled = false;
+                btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
+                currentForm.reset();
+            });
+        }
     })();
 </script>
 
