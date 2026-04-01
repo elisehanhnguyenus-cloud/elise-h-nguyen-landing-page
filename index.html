@@ -1,4 +1,4 @@
-﻿<!-- VIBE_FIX_V1.0.1_NUCLEAR -->
+<!-- VIBE_FIX_V1.0.1_NUCLEAR -->
 <!DOCTYPE html>
 
 <html class="dark" lang="vi"><head>
@@ -845,6 +845,8 @@
     let _gateSheetSent = false;
     // Lưu trữ lead data được AI bóc tách (dùng merge vào Contact Form)
     let _extractedLeadData = {};
+    // Lưu toàn bộ lịch sử chat đã format (cập nhật mỗi lần AI trả lời)
+    let _chatHistoryText = '';
 
     /**
      * Bóc tách tag ẩn ||LEAD_DATA:{...}|| từ response AI
@@ -862,13 +864,15 @@
                 var msg = chatHistoryArray[i];
                 var cleanContent = msg.content.replace(dataPattern, "").trim();
                 if (!cleanContent) continue;
-                var role = msg.role === 'user' ? 'Khách hỏi' : 'Kat trả lời';
-                // Tóm gọn: chỉ lấy 300 ký tự đầu tiên của mỗi tin
-                var snippet = cleanContent.length > 300 ? cleanContent.substring(0, 300) + '...' : cleanContent;
-                pairs.push('[' + (i+1) + '] ' + role + ':\n' + snippet);
+                var role = msg.role === 'user' ? '👤 Khách' : '🤖 Kat';
+                // Tóm gọn: chỉ lấy 400 ký tự đầu tiên của mỗi tin
+                var snippet = cleanContent.length > 400 ? cleanContent.substring(0, 400) + '...' : cleanContent;
+                pairs.push('[' + (i+1) + '] ' + role + ': ' + snippet);
             }
-            formattedHistory = '=== TÓM TẮT PHIÊN [' + chatHistoryArray.length + ' tin nhắn] ===\n\n' + pairs.join('\n\n---\n\n');
+            formattedHistory = '=== LICH SU CHAT [' + chatHistoryArray.length + ' tin] - ' + new Date().toLocaleString('vi-VN') + ' ===\n\n' + pairs.join('\n\n');
         }
+        // Lưu vào biến global để Contact Form có thể dùng
+        if (formattedHistory) _chatHistoryText = formattedHistory;
 
         if (aiResponse.includes("||LEAD_DATA:")) {
             const match = aiResponse.match(dataPattern);
@@ -990,10 +994,12 @@
                 // KHÔNG gửi /api/leads để tránh duplicate trên Notion
                 if (!_gateSheetSent) {
                     _gateSheetSent = true;
+                    // Khởi tạo _chatHistoryText với thông tin phiên
+                    _chatHistoryText = '[Bat dau phien] ' + new Date().toLocaleString('vi-VN') + ' — Khach ' + name + ' (' + email + ') vao phong tu van Kat.';
                     window.setTimeout(function() {
                         sendLeadToGoogleSheets(
                             { name: name, phone: '', email: email },
-                            '[Bắt đầu phiên] ' + new Date().toLocaleString('vi-VN') + ' — Khách ' + name + ' (' + email + ') đã vào phòng tư vấn Kat.'
+                            _chatHistoryText
                         );
                     }, 50);
                 }
@@ -1203,15 +1209,15 @@
                     + '\nChủ đề: ' + subject
                     + '\nNội dung: ' + message;
 
-                // LỖI 3 FIX: Gửi portfolioLink và attachmentName riêng biệt
-                // để Google Sheets hiển thị đúng thay vì #ERROR
-                // Merge thêm phone từ AI extraction (nếu có)
+                // Merge phone từ AI extraction (nếu có)
                 var mergedPhone = _extractedLeadData.phone || '';
+                // Gộp: lịch sử chat AI + thông tin form
+                var fullChatLog = (_chatHistoryText ? _chatHistoryText + '\n\n' : '') + formDetails;
                 window.setTimeout(function() {
                     try {
                         sendLeadToGoogleSheets(
                             { name: fullName, phone: mergedPhone, email: email },
-                            formDetails,
+                            fullChatLog,
                             {
                                 company: company,
                                 subject: subject,
