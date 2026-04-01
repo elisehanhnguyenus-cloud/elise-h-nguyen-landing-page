@@ -852,19 +852,20 @@
     function processAIResponse(aiResponse, chatHistoryArray) {
         const dataPattern = /\|\|LEAD_DATA:\s*(\{.*?\})\s*\|\|/;
 
-        // Format lịch sử chat cho dễ đọc trên Google Sheets (giới hạn 800 ký tự)
+        // Format lịch sử chat — Tóm tắt các ý chính (Q&A)
         let formattedHistory = "";
         if (chatHistoryArray && chatHistoryArray.length > 0) {
-            const fullHistory = chatHistoryArray.map(msg => {
-                let role = msg.role === 'user' ? 'Khách' : 'AI';
-                let content = msg.content.replace(dataPattern, "").trim();
-                return `${role}: ${content}`;
-            }).join('\n---\n');
-            if (fullHistory.length > 800) {
-                formattedHistory = fullHistory.substring(0, 800) + '...\n\n[📋 Xem thêm: Lịch sử đầy đủ ' + chatHistoryArray.length + ' tin nhắn - Session ' + AI_CHAT_SESSION_ID + ']';
-            } else {
-                formattedHistory = fullHistory;
+            var pairs = [];
+            for (var i = 0; i < chatHistoryArray.length; i++) {
+                var msg = chatHistoryArray[i];
+                var cleanContent = msg.content.replace(dataPattern, "").trim();
+                if (!cleanContent) continue;
+                var role = msg.role === 'user' ? 'Khách hỏi' : 'Kat trả lời';
+                // Tóm gọn: chỉ lấy 300 ký tự đầu tiên của mỗi tin
+                var snippet = cleanContent.length > 300 ? cleanContent.substring(0, 300) + '...' : cleanContent;
+                pairs.push('[' + (i+1) + '] ' + role + ':\n' + snippet);
             }
+            formattedHistory = '=== TÓM TẮT PHIÊN [' + chatHistoryArray.length + ' tin nhắn] ===\n\n' + pairs.join('\n\n---\n\n');
         }
 
         if (aiResponse.includes("||LEAD_DATA:")) {
@@ -1142,45 +1143,19 @@
                 if (contactEl) contactEl.scrollIntoView({ behavior: 'smooth' });
                 if (isOpen) toggleChat();
             } else if (type === 'services') {
-                window.submitQuickReply('Cho tôi biết về các dịch vụ của Elise');
-            }
-        };
-
-        // Welcome
-        setTimeout(() => {
-            addBubble(`Chào mừng Bạn đến với __Phòng làm việc của Elise Hạnh Nguyễn__. Em là **Kat** - trợ lý Concierge Advisor. Chúng ta có thể đồng hành qua 4 trụ cột của chị Elise:<br><br>1. **Strategy & Go Global**: Tư vấn chiến lược SMEs.<br>2. **AI Automation**: Hệ thống hóa sáng tạo.<br>3. **Professional Mentoring**: Marcom/Copywriter.<br>4. **Brand Clarity Call 1:1**: Bóc tách bản sắc thương hiệu.<br><br>Để **Kat có thể** hỗ trợ đúng trọng tâm nhất, Bạn thuộc nhóm nào dưới đây?<br><br>[BTN:Shop Handmade / SME] [BTN:Leader / Chuyên gia] [BTN:Junior / Mid-Senior] [BTN:Khác]`, false);
-        }, 1200);
-    })();
-</script>
-
-<!-- Lead Management Logic -->
-<script>
-    (function() {
-        const form = document.getElementById('leadForm');
-        if (!form) return;
-
-        // Custom File Input Display
-        const attachment = document.getElementById('attachment');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-        if (attachment && fileNameDisplay) {
-            attachment.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    fileNameDisplay.innerText = e.target.files[0].name;
-                    fileNameDisplay.classList.add('text-primary', 'font-medium');
-                } else {
-                    fileNameDisplay.innerText = 'Gợi ý: CV, Portfolio hoặc Catalog/Proposal của bạn';
-                    fileNameDisplay.classList.remove('text-primary', 'font-medium');
-                }
-            });
-        }
-
-        form.addEventListener('submit', function(e) {
+           form.addEventListener('submit', function(e) {
             e.preventDefault();
             var btn = document.getElementById('submitBtn');
             var status = document.getElementById('formStatus');
             var currentForm = form;
 
-            // Bước 1: Thu thập dữ liệu NGAY LẬP TỨC trước khi làm gì khác
+            // Hiện trạng thái đang gửi
+            btn.disabled = true;
+            btn.innerText = 'ĐANG GỬI...';
+            status.innerHTML = '<span style="color:#C05C3F;font-size:12px;font-style:italic">⏳ Đang gửi thông tin…</span>';
+            status.style.display = 'block';
+
+            // Bước 1: Thu thập dữ liệu đồng bộ
             var fullName = document.getElementById('fullName').value;
             var company = document.getElementById('company') ? document.getElementById('company').value : '';
             var email = document.getElementById('email').value;
@@ -1188,25 +1163,49 @@
             var message = document.getElementById('message') ? document.getElementById('message').value : '';
             var portfolioLink = document.getElementById('portfolioLink') ? document.getElementById('portfolioLink').value : '';
             var bookingDate = document.getElementById('bookingDate') ? document.getElementById('bookingDate').value : '';
+            var attachmentName = (attachment && attachment.files && attachment.files.length > 0) ? attachment.files[0].name : '';
 
-            var formDetails = '[Contact Form]\nTên: ' + fullName + '\nCông ty: ' + (company || 'N/A') + '\nChủ đề: ' + subject + '\nNội dung: ' + message;
+            // Bước 2: formDetails đầy đủ (mọi trường kể cả link + file)
+            var formDetails = '[Contact Form]'
+                + '\nTên: ' + fullName
+                + '\nEmail: ' + email
+                + '\nCông ty: ' + (company || 'N/A')
+                + '\nChủ đề: ' + subject
+                + '\nNội dung: ' + message
+                + (portfolioLink ? '\nPortfolio/Link: ' + portfolioLink : '')
+                + (attachmentName ? '\nTệp đính kèm: ' + attachmentName : '')
+                + (bookingDate ? '\nNgày đặt lịch: ' + bookingDate : '');
 
-            // Bước 2: Gửi dữ liệu ngầm (fire & forget hoàn toàn)
+            // Bước 3: Gửi dữ liệu ngầm (fire & forget)
             window.setTimeout(function() {
                 try { sendLeadToGoogleSheets({ name: fullName, phone: '', email: email }, formDetails); } catch(ex) {}
             }, 10);
             window.setTimeout(function() {
                 try {
+                    var notionMessage = message
+                        + (portfolioLink ? '\n\nPortfolio/Link: ' + portfolioLink : '')
+                        + (attachmentName ? '\n\nTệp đính kèm: ' + attachmentName : '');
                     fetch('/api/leads', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fullName: fullName, company: company, email: email, subject: subject, message: message, portfolioLink: portfolioLink, bookingDate: bookingDate, attachment: null })
+                        body: JSON.stringify({
+                            fullName: fullName, company: company, email: email,
+                            subject: subject, message: notionMessage,
+                            portfolioLink: portfolioLink, bookingDate: bookingDate, attachment: null
+                        })
                     });
                 } catch(ex) {}
             }, 20);
 
-            // Bước 3: Hiện thành công NGAY LẬP TỨC (không chờ gì)
-            status.innerHTML = '<div style="background:#fdf8f5;padding:20px;border-radius:16px;border:1px solid #e8d5cc;margin-top:16px"><div style="color:#C05C3F;font-weight:bold;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">✓ GỬI THÔNG TIN THÀNH CÔNG!</div><p style="font-size:12px;color:#666;line-height:1.6">Thông tin đã được ghi nhận. Elise sẽ phản hồi qua email sớm nhất.</p></div>';
+            // Bước 4: Hiện thành công NGAY LẬP TỨC
+            status.innerHTML = '<div style="background:#fdf8f5;padding:20px;border-radius:16px;border:1px solid #e8d5cc;margin-top:16px">'
+                + '<div style="color:#C05C3F;font-weight:bold;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✓ Gửi thông tin thành công!</div>'
+                + '<p style="font-size:12px;color:#555;line-height:1.8;margin:0">'
+                + 'Thông tin của anh/chị đã được ghi nhận đầy đủ.'
+                + (portfolioLink ? '<br>🔗 <strong>Link Portfolio</strong>: đã lưu.' : '')
+                + (attachmentName ? '<br>📎 <strong>Tệp đính kèm</strong>: <em>' + attachmentName + '</em> đã ghi nhận.' : '')
+                + '<br><br>Chị Elise sẽ phản hồi anh/chị qua email sớm nhất ạ.</p>'
+                + '</div>';
             btn.disabled = false;
             btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
             currentForm.reset();
