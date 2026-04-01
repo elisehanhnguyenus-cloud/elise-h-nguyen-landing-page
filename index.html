@@ -898,21 +898,30 @@
     /**
      * Gửi dữ liệu Lead lên Google Apps Script → Google Sheets
      */
-    async function sendLeadToGoogleSheets(leadData, chatHistoryText) {
+    async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
         if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE' || GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE')) {
             console.warn("⚠️ Google Script URL chưa được cấu hình.");
             return false;
         }
         try {
-            const payload = JSON.stringify({
+            var payloadObj = {
                 name: leadData.name || '',
                 phone: leadData.phone || '',
                 email: leadData.email || '',
-                source: window.location.href,
+                source: String(window.location.href),
                 sessionId: AI_CHAT_SESSION_ID,
-                chatHistory: chatHistoryText,
+                chatHistory: chatHistoryText || '',
                 timestamp: new Date().toLocaleString('vi-VN')
-            });
+            };
+            // Merge thêm các trường phụ (portfolioLink, attachmentName, company, subject...)
+            if (extraFields && typeof extraFields === 'object') {
+                for (var key in extraFields) {
+                    if (extraFields.hasOwnProperty(key)) {
+                        payloadObj[key] = extraFields[key];
+                    }
+                }
+            }
+            const payload = JSON.stringify(payloadObj);
 
             // Sử dụng text/plain để vượt qua CORS (no-cors mode)
             await fetch(GOOGLE_SCRIPT_URL, {
@@ -982,19 +991,14 @@
                 }
 
                 // BƯỚC 1: Lưu ngay lập tức vào Google Sheets (fire & forget)
+                // LỖI 2 FIX: Chatbot gate chỉ gửi Google Sheets
+                // KHÔNG gửi /api/leads để tránh duplicate trên Notion
                 window.setTimeout(function() {
                     sendLeadToGoogleSheets(
                         { name: name, phone: '', email: email },
                         '[Bắt đầu phiên] ' + new Date().toLocaleString('vi-VN') + ' — Khách ' + name + ' (' + email + ') đã vào phòng tư vấn Kat.'
                     );
                 }, 50);
-                window.setTimeout(function() {
-                    fetch('/api/leads', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fullName: name, email: email, subject: 'Phòng làm việc Entry', isChatSummary: true })
-                    }).catch(function() {});
-                }, 100);
 
                 // BƯỚC 2: Kat gửi tinChào mừng có tên khách ngay lập tức
                 var firstName = name.split(' ').pop(); // Lấy tên riêng (từ cuối)
@@ -1152,6 +1156,22 @@
         // ============================================================
         const contactForm = document.getElementById('leadForm');
         const attachmentInp = document.getElementById('attachment');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+        // LỖI 1 FIX: Hiển thị tên file đã chọn ngay khi người dùng chọn file
+        if (attachmentInp && fileNameDisplay) {
+            attachmentInp.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameDisplay.textContent = '📎 ' + this.files[0].name;
+                    fileNameDisplay.style.color = '#C05C3F';
+                    fileNameDisplay.style.fontWeight = 'bold';
+                } else {
+                    fileNameDisplay.textContent = 'Tải lên trực tiếp (PDF, DOCX)';
+                    fileNameDisplay.style.color = '';
+                    fileNameDisplay.style.fontWeight = '';
+                }
+            });
+        }
         
         if (contactForm) {
             contactForm.addEventListener('submit', function(e) {
@@ -1177,21 +1197,33 @@
                 var portfolioLink = document.getElementById('portfolioLink') ? document.getElementById('portfolioLink').value : '';
                 var attachmentName = (attachmentInp && attachmentInp.files && attachmentInp.files.length > 0) ? attachmentInp.files[0].name : '';
 
-                // Bước 2: formDetails đầy đủ
+                // Bước 2: formDetails cho chatHistory (Google Sheets)
                 var formDetails = '[Contact Form]'
                     + '\nTên: ' + fullName
                     + '\nEmail: ' + email
                     + '\nCông ty: ' + (company || 'N/A')
                     + '\nChủ đề: ' + subject
-                    + '\nNội dung: ' + message
-                    + (portfolioLink ? '\nPortfolio/Link: ' + portfolioLink : '')
-                    + (attachmentName ? '\nTệp đính kèm: ' + attachmentName : '');
+                    + '\nNội dung: ' + message;
 
-                // Bước 3: Gửi dữ liệu ngầm (fire & forget)
+                // LỖI 3 FIX: Gửi portfolioLink và attachmentName riêng biệt
+                // để Google Sheets hiển thị đúng thay vì #ERROR
                 window.setTimeout(function() {
-                    try { sendLeadToGoogleSheets({ name: fullName, phone: '', email: email }, formDetails); } catch(ex) {}
+                    try {
+                        sendLeadToGoogleSheets(
+                            { name: fullName, phone: '', email: email },
+                            formDetails,
+                            {
+                                company: company,
+                                subject: subject,
+                                portfolioLink: portfolioLink || '',
+                                attachmentName: attachmentName || ''
+                            }
+                        );
+                    } catch(ex) {}
                 }, 10);
                 
+                // LỖI 2 FIX: CHỈ gửi lên Notion 1 lần duy nhất qua /api/leads
+                // (Trước đây gửi cả Google Sheets + Notion → bị duplicate)
                 window.setTimeout(function() {
                     try {
                         var notionMessage = message
@@ -1223,6 +1255,12 @@
                 btn.disabled = false;
                 btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
                 currentForm.reset();
+                // Reset lại tên file hiển thị
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = 'Tải lên trực tiếp (PDF, DOCX)';
+                    fileNameDisplay.style.color = '';
+                    fileNameDisplay.style.fontWeight = '';
+                }
             });
         }
     })();
