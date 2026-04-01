@@ -852,14 +852,19 @@
     function processAIResponse(aiResponse, chatHistoryArray) {
         const dataPattern = /\|\|LEAD_DATA:\s*(\{.*?\})\s*\|\|/;
 
-        // Format lịch sử chat cho dễ đọc trên Google Sheets
+        // Format lịch sử chat cho dễ đọc trên Google Sheets (giới hạn 800 ký tự)
         let formattedHistory = "";
         if (chatHistoryArray && chatHistoryArray.length > 0) {
-            formattedHistory = chatHistoryArray.map(msg => {
+            const fullHistory = chatHistoryArray.map(msg => {
                 let role = msg.role === 'user' ? 'Khách' : 'AI';
                 let content = msg.content.replace(dataPattern, "").trim();
                 return `${role}: ${content}`;
-            }).join('\n\n');
+            }).join('\n---\n');
+            if (fullHistory.length > 800) {
+                formattedHistory = fullHistory.substring(0, 800) + '...\n\n[📋 Xem thêm: Lịch sử đầy đủ ' + chatHistoryArray.length + ' tin nhắn - Session ' + AI_CHAT_SESSION_ID + ']';
+            } else {
+                formattedHistory = fullHistory;
+            }
         }
 
         if (aiResponse.includes("||LEAD_DATA:")) {
@@ -959,33 +964,46 @@
         }
 
         if (gateForm) {
-            gateForm.addEventListener('submit', async (e) => {
+            gateForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                const nameInp = document.getElementById('gate-name');
-                const emailInp = document.getElementById('gate-email');
+                var nameInp = document.getElementById('gate-name');
+                var emailInp = document.getElementById('gate-email');
                 if (!nameInp || !emailInp) return;
                 
-                const name = nameInp.value;
-                const email = emailInp.value;
-                localStorage.setItem('kat-lead', JSON.stringify({ name, email }));
+                var name = nameInp.value.trim();
+                var email = emailInp.value.trim();
+                localStorage.setItem('kat-lead', JSON.stringify({ name: name, email: email }));
                 
+                // Ẩn gate form
                 if (gate) {
                     gate.style.opacity = '0';
-                    setTimeout(() => { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
+                    setTimeout(function() { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
                 }
-                
-                fetch('/api/leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullName: name, email, subject: 'Phòng làm việc Entry', isChatSummary: true })
-                }).catch(() => {});
 
-                // Đồng bộ Google Sheets (primary)
-                sendLeadToGoogleSheets(
-                    { name: name, phone: '', email: email },
-                    '[Gate Form] Khách bắt đầu phiên chat với Kat'
-                );
-                
+                // BƯỚC 1: Lưu ngay lập tức vào Google Sheets (fire & forget)
+                window.setTimeout(function() {
+                    sendLeadToGoogleSheets(
+                        { name: name, phone: '', email: email },
+                        '[Bắt đầu phiên] ' + new Date().toLocaleString('vi-VN') + ' — Khách ' + name + ' (' + email + ') đã vào phòng tư vấn Kat.'
+                    );
+                }, 50);
+                window.setTimeout(function() {
+                    fetch('/api/leads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fullName: name, email: email, subject: 'Phòng làm việc Entry', isChatSummary: true })
+                    }).catch(function() {});
+                }, 100);
+
+                // BƯỚC 2: Kat gửi tinChào mừng có tên khách ngay lập tức
+                var firstName = name.split(' ').pop(); // Lấy tên riêng (từ cuối)
+                var welcomeMsg = 'Xin chào <strong>' + name + '</strong>! Em là Kat — Concierge Advisor của chị Elise.\n\n'
+                    + '✅ Em đã lưu thông tin của anh/chị vào hệ thống rồi ạ.\n\n'
+                    + 'Để em hỗ trợ tốt nhất, anh/chị đang cần tư vấn về lĩnh vực nào?'
+                    + '<br><br>'
+                    + '[BTN:Chiến lược thương hiệu][BTN:AI Automation][BTN:Mentoring Cá nhân][BTN:Đặt lịch Call 1:1]';
+                setTimeout(function() { addBubble(welcomeMsg, false); }, 400);
+
                 if (refs.input) refs.input.focus();
             });
         }
