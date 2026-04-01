@@ -1158,66 +1158,40 @@
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const status = document.getElementById('formStatus');
+            var btn = document.getElementById('submitBtn');
+            var status = document.getElementById('formStatus');
+            var currentForm = form;
 
-            btn.disabled = true;
-            btn.innerText = 'ĐANG GỬI...';
-            status.innerHTML = '<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#C05C3F] animate-ping"></span> Đang xử lý...</span>';
-            status.className = 'text-xs mt-4 block text-[#C05C3F] italic font-medium';
-            status.style.display = 'block';
+            // Bước 1: Thu thập dữ liệu NGAY LẬP TỨC trước khi làm gì khác
+            var fullName = document.getElementById('fullName').value;
+            var company = document.getElementById('company') ? document.getElementById('company').value : '';
+            var email = document.getElementById('email').value;
+            var subject = document.getElementById('subject') ? document.getElementById('subject').value : '';
+            var message = document.getElementById('message') ? document.getElementById('message').value : '';
+            var portfolioLink = document.getElementById('portfolioLink') ? document.getElementById('portfolioLink').value : '';
+            var bookingDate = document.getElementById('bookingDate') ? document.getElementById('bookingDate').value : '';
 
-            // Thu thập dữ liệu đồng bộ (không async)
-            const data = {
-                fullName: document.getElementById('fullName').value,
-                company: document.getElementById('company').value || '',
-                email: document.getElementById('email').value,
-                subject: document.getElementById('subject').value,
-                bookingDate: document.getElementById('bookingDate').value || '',
-                message: document.getElementById('message').value,
-                portfolioLink: document.getElementById('portfolioLink')?.value || '',
-                attachment: null
-            };
+            var formDetails = '[Contact Form]\nTên: ' + fullName + '\nCông ty: ' + (company || 'N/A') + '\nChủ đề: ' + subject + '\nNội dung: ' + message;
 
-            const formDetails = [
-                '[Contact Form]',
-                'Tên: ' + data.fullName,
-                'Công ty: ' + (data.company || 'N/A'),
-                'Chủ đề: ' + data.subject,
-                'Nội dung: ' + data.message,
-                data.portfolioLink ? 'Portfolio: ' + data.portfolioLink : '',
-                data.bookingDate ? 'Ngày đặt lịch: ' + data.bookingDate : ''
-            ].filter(Boolean).join('\n');
+            // Bước 2: Gửi dữ liệu ngầm (fire & forget hoàn toàn)
+            window.setTimeout(function() {
+                try { sendLeadToGoogleSheets({ name: fullName, phone: '', email: email }, formDetails); } catch(ex) {}
+            }, 10);
+            window.setTimeout(function() {
+                try {
+                    fetch('/api/leads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fullName: fullName, company: company, email: email, subject: subject, message: message, portfolioLink: portfolioLink, bookingDate: bookingDate, attachment: null })
+                    });
+                } catch(ex) {}
+            }, 20);
 
-            const showSuccess = function() {
-                status.innerHTML = [
-                    '<div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4">',
-                    '<div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">',
-                    '<span class="material-symbols-outlined">check_circle</span>',
-                    'GỬI THÔNG TIN THÀNH CÔNG!',
-                    '</div>',
-                    '<p class="text-xs text-on-surface/70 leading-relaxed mb-4">',
-                    'Thông tin đã được ghi nhận. Elise sẽ phản hồi qua email sớm nhất.',
-                    '</p>',
-                    '</div>'
-                ].join('');
-                form.reset();
-                btn.disabled = false;
-                btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
-            };
-
-            // FIRE AND FORGET — Không chờ bất kỳ response nào
-            try { sendLeadToGoogleSheets({ name: data.fullName, phone: '', email: data.email }, formDetails); } catch(err) {}
-            try {
-                fetch('/api/leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                }).catch(function() {});
-            } catch(err) {}
-
-            // Đảm bảo 100% hiển thị thành công sau 2 giây
-            setTimeout(showSuccess, 2000);
+            // Bước 3: Hiện thành công NGAY LẬP TỨC (không chờ gì)
+            status.innerHTML = '<div style="background:#fdf8f5;padding:20px;border-radius:16px;border:1px solid #e8d5cc;margin-top:16px"><div style="color:#C05C3F;font-weight:bold;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">✓ GỬI THÔNG TIN THÀNH CÔNG!</div><p style="font-size:12px;color:#666;line-height:1.6">Thông tin đã được ghi nhận. Elise sẽ phản hồi qua email sớm nhất.</p></div>';
+            btn.disabled = false;
+            btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
+            currentForm.reset();
         });
     })();
 </script>
