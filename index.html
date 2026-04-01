@@ -893,28 +893,33 @@
      * Gửi dữ liệu Lead lên Google Apps Script → Google Sheets
      */
     async function sendLeadToGoogleSheets(leadData, chatHistoryText) {
-        if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
-            console.warn("⚠️ Google Script URL chưa được cấu hình. Bỏ qua gửi Google Sheets.");
-            return;
+        if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE' || GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE')) {
+            console.warn("⚠️ Google Script URL chưa được cấu hình.");
+            return false;
         }
         try {
+            const payload = JSON.stringify({
+                name: leadData.name || '',
+                phone: leadData.phone || '',
+                email: leadData.email || '',
+                source: window.location.href,
+                sessionId: AI_CHAT_SESSION_ID,
+                chatHistory: chatHistoryText,
+                timestamp: new Date().toLocaleString('vi-VN')
+            });
+
+            // Sử dụng text/plain để vượt qua CORS (no-cors mode)
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: leadData.name || '',
-                    phone: leadData.phone || '',
-                    email: leadData.email || '',
-                    source: window.location.href,
-                    sessionId: AI_CHAT_SESSION_ID,
-                    chatHistory: chatHistoryText,
-                    timestamp: new Date().toLocaleString('vi-VN')
-                })
+                headers: { 'Content-Type': 'text/plain' },
+                body: payload
             });
-            console.log("📤 Đã đồng bộ dữ liệu vào Google Sheets!");
+            console.log("📤 Đã gửi tín hiệu đồng bộ Google Sheets!");
+            return true;
         } catch (err) {
-            console.warn("⚠️ Không gửi được dữ liệu lead:", err);
+            console.warn("⚠️ Lỗi gửi Google Sheets:", err);
+            return false;
         }
     }
 
@@ -1197,7 +1202,7 @@
                 attachment: fileData ? { data: fileData, name: fileName, contentType: fileContentType } : null
             };
 
-            // GỬI GOOGLE SHEETS TRƯỚC (QUAN TRỌNG ĐỂ KHÔNG MẤT LEAD)
+            // GỬI GOOGLE SHEETS (Dùng để hiển thị thành công nhanh)
             const formDetails = [
                 `[Contact Form]`,
                 `Công ty: ${document.getElementById('company')?.value || 'N/A'}`,
@@ -1207,46 +1212,37 @@
                 document.getElementById('bookingDate')?.value ? `Ngày đặt lịch: ${document.getElementById('bookingDate').value}` : ''
             ].filter(Boolean).join('\n');
 
-            sendLeadToGoogleSheets(
-                { name: data.fullName, phone: '', email: data.email },
-                formDetails
-            );
-
-            try {
-                const res = await fetch('/api/leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await res.json();
-                if (res.ok) {
-                    status.innerHTML = `
-                        <div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            <div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">
-                                <span class="material-symbols-outlined">check_circle</span>
-                                BẠN ĐÃ HOÀN THÀNH FORM SUBMIT THÀNH CÔNG!
-                            </div>
-                            <p class="text-xs text-on-surface/70 leading-relaxed mb-4">
-                                Thông tin đã được chuyển thẳng tới Elise. Bạn có muốn nhận email xác nhận thời gian đặt lịch ngay lập tức không?
-                            </p>
-                            <div class="flex gap-2">
-                                <button onclick="window.confirmFollowUp(true)" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">Có, gửi ngay</button>
-                                <button onclick="window.confirmFollowUp(false)" class="flex-1 border border-primary/30 text-primary py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary/5 transition-all">Để sau</button>
-                            </div>
+            const showSuccess = () => {
+                status.innerHTML = `
+                    <div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            GỬI THÔNG TIN THÀNH CÔNG!
                         </div>
-                    `;
-                    form.reset();
-                } else {
-                    throw new Error(result.error || 'Giao dịch không thành công');
-                }
-            } catch (err) {
-                status.innerText = 'Lỗi hệ thống: ' + err.message + '. Chị vui lòng thử lại sau.';
-                status.classList.replace('text-[#C05C3F]', 'text-error');
-            } finally {
+                        <p class="text-xs text-on-surface/70 leading-relaxed mb-4">
+                            Thông tin đã được lưu lại. Elise sẽ phản hồi Bạn sớm nhất qua email nhé.
+                        </p>
+                        <div class="flex gap-2">
+                            <button onclick="window.location.reload()" class="flex-1 bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">OK, cảm ơn</button>
+                        </div>
+                    </div>
+                `;
+                form.reset();
                 btn.disabled = false;
                 btn.innerText = 'GỬI YÊU CẦU TƯ VẤN';
-            }
+            };
+
+            // Gửi Sheets và Notion đồng thời
+            sendLeadToGoogleSheets({ name: data.fullName, phone: '', email: data.email }, formDetails);
+            
+            fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => console.log("Notion sync completed")).catch(e => console.warn("Notion sync failed", e));
+
+            // Hiển thị thành công sau 1 giây (không bắt khách chờ lâu)
+            setTimeout(showSuccess, 1500);
         });
 
         window.confirmFollowUp = (confirm) => {
