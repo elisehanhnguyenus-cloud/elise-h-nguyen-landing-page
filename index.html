@@ -843,6 +843,10 @@
     // ============================================================
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLxw2vV8vmIp8LhUGrzC6pmLrcFbnrdz1Da8r9bPGl80Z4sgajwv37grqtdh78kFh_/exec';
     const AI_CHAT_SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    // Anti-duplicate: track xem đã gửi GSheets chưa trong phiên này
+    let _gateSheetSent = false;
+    // Lưu trữ lead data được AI bóc tách (dùng merge vào Contact Form)
+    let _extractedLeadData = {};
 
     /**
      * Bóc tách tag ẩn ||LEAD_DATA:{...}|| từ response AI
@@ -873,19 +877,13 @@
             if (match && match[1]) {
                 try {
                     const leadData = JSON.parse(match[1]);
-                    console.log("✅ Dữ liệu khách hàng bóc được:", leadData);
+                    console.log("✅ Dữ liệu khách hàng bóc được (lưu tạm, KHÔNG gửi GSheets):", leadData);
 
-                    // Merge với thông tin từ Gate Form (nếu có)
-                    const gateLead = JSON.parse(localStorage.getItem('kat-lead') || '{}');
-                    const mergedLead = {
-                        name: leadData.name || gateLead.name || '',
-                        phone: leadData.phone || '',
-                        email: leadData.email || gateLead.email || ''
-                    };
-
-                    if (mergedLead.name || mergedLead.phone || mergedLead.email) {
-                        sendLeadToGoogleSheets(mergedLead, formattedHistory);
-                    }
+                    // CHỈ LƯU vào biến _extractedLeadData — KHÔNG gửi GSheets tại đây
+                    // Dữ liệu sẽ được merge vào khi Contact Form gửi
+                    if (leadData.name) _extractedLeadData.name = leadData.name;
+                    if (leadData.phone) _extractedLeadData.phone = leadData.phone;
+                    if (leadData.email) _extractedLeadData.email = leadData.email;
                 } catch (error) {
                     console.error("❌ Lỗi parse JSON từ AI:", error);
                 }
@@ -990,15 +988,17 @@
                     setTimeout(function() { gate.classList.add('hidden'); gate.style.opacity = '1'; }, 300);
                 }
 
-                // BƯỚC 1: Lưu ngay lập tức vào Google Sheets (fire & forget)
-                // LỖI 2 FIX: Chatbot gate chỉ gửi Google Sheets
+                // BƯỚC 1: Lưu ngay vào Google Sheets — chỉ 1 lần duy nhất mỗi phiên
                 // KHÔNG gửi /api/leads để tránh duplicate trên Notion
-                window.setTimeout(function() {
-                    sendLeadToGoogleSheets(
-                        { name: name, phone: '', email: email },
-                        '[Bắt đầu phiên] ' + new Date().toLocaleString('vi-VN') + ' — Khách ' + name + ' (' + email + ') đã vào phòng tư vấn Kat.'
-                    );
-                }, 50);
+                if (!_gateSheetSent) {
+                    _gateSheetSent = true;
+                    window.setTimeout(function() {
+                        sendLeadToGoogleSheets(
+                            { name: name, phone: '', email: email },
+                            '[Bắt đầu phiên] ' + new Date().toLocaleString('vi-VN') + ' — Khách ' + name + ' (' + email + ') đã vào phòng tư vấn Kat.'
+                        );
+                    }, 50);
+                }
 
                 // BƯỚC 2: Kat gửi tinChào mừng có tên khách ngay lập tức
                 var firstName = name.split(' ').pop(); // Lấy tên riêng (từ cuối)
@@ -1207,10 +1207,12 @@
 
                 // LỖI 3 FIX: Gửi portfolioLink và attachmentName riêng biệt
                 // để Google Sheets hiển thị đúng thay vì #ERROR
+                // Merge thêm phone từ AI extraction (nếu có)
+                var mergedPhone = _extractedLeadData.phone || '';
                 window.setTimeout(function() {
                     try {
                         sendLeadToGoogleSheets(
-                            { name: fullName, phone: '', email: email },
+                            { name: fullName, phone: mergedPhone, email: email },
                             formDetails,
                             {
                                 company: company,
