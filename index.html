@@ -1197,6 +1197,21 @@
                 attachment: fileData ? { data: fileData, name: fileName, contentType: fileContentType } : null
             };
 
+            // GỬI GOOGLE SHEETS TRƯỚC (QUAN TRỌNG ĐỂ KHÔNG MẤT LEAD)
+            const formDetails = [
+                `[Contact Form]`,
+                `Công ty: ${document.getElementById('company')?.value || 'N/A'}`,
+                `Chủ đề: ${document.getElementById('subject')?.value || 'N/A'}`,
+                `Nội dung: ${document.getElementById('message')?.value || 'N/A'}`,
+                document.getElementById('portfolioLink')?.value ? `Portfolio: ${document.getElementById('portfolioLink').value}` : '',
+                document.getElementById('bookingDate')?.value ? `Ngày đặt lịch: ${document.getElementById('bookingDate').value}` : ''
+            ].filter(Boolean).join('\n');
+
+            sendLeadToGoogleSheets(
+                { name: data.fullName, phone: '', email: data.email },
+                formDetails
+            );
+
             try {
                 const res = await fetch('/api/leads', {
                     method: 'POST',
@@ -1206,21 +1221,6 @@
 
                 const result = await res.json();
                 if (res.ok) {
-                    // Đồng bộ Google Sheets (primary) — gửi song song với Notion
-                    const formDetails = [
-                        `[Contact Form]`,
-                        `Công ty: ${data.company || 'N/A'}`,
-                        `Chủ đề: ${data.subject || 'N/A'}`,
-                        `Nội dung: ${data.message || 'N/A'}`,
-                        data.portfolioLink ? `Portfolio: ${data.portfolioLink}` : '',
-                        data.bookingDate ? `Ngày đặt lịch: ${data.bookingDate}` : ''
-                    ].filter(Boolean).join('\n');
-
-                    sendLeadToGoogleSheets(
-                        { name: data.fullName, phone: '', email: data.email },
-                        formDetails
-                    );
-
                     status.innerHTML = `
                         <div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">
