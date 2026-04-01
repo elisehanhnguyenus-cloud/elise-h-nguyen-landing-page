@@ -838,6 +838,89 @@
 </style>
 
 <script>
+    // ============================================================
+    // GOOGLE SHEETS INTEGRATION — Lead Capture từ Chatbot
+    // ============================================================
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQP81qTBK1ojInEYC8XV7cFaKVOa-1qluGmMsCGP6nvb60cK9Z84gqlPVyU0EhoIje/exec';
+    const AI_CHAT_SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+    /**
+     * Bóc tách tag ẩn ||LEAD_DATA:{...}|| từ response AI
+     * → Gửi data lên Google Sheets
+     * → Trả về câu trả lời sạch (không còn tag)
+     */
+    function processAIResponse(aiResponse, chatHistoryArray) {
+        const dataPattern = /\|\|LEAD_DATA:\s*(\{.*?\})\s*\|\|/;
+
+        // Format lịch sử chat cho dễ đọc trên Google Sheets
+        let formattedHistory = "";
+        if (chatHistoryArray && chatHistoryArray.length > 0) {
+            formattedHistory = chatHistoryArray.map(msg => {
+                let role = msg.role === 'user' ? 'Khách' : 'AI';
+                let content = msg.content.replace(dataPattern, "").trim();
+                return `${role}: ${content}`;
+            }).join('\n\n');
+        }
+
+        if (aiResponse.includes("||LEAD_DATA:")) {
+            const match = aiResponse.match(dataPattern);
+            if (match && match[1]) {
+                try {
+                    const leadData = JSON.parse(match[1]);
+                    console.log("✅ Dữ liệu khách hàng bóc được:", leadData);
+
+                    // Merge với thông tin từ Gate Form (nếu có)
+                    const gateLead = JSON.parse(localStorage.getItem('kat-lead') || '{}');
+                    const mergedLead = {
+                        name: leadData.name || gateLead.name || '',
+                        phone: leadData.phone || '',
+                        email: leadData.email || gateLead.email || ''
+                    };
+
+                    if (mergedLead.name || mergedLead.phone || mergedLead.email) {
+                        sendLeadToGoogleSheets(mergedLead, formattedHistory);
+                    }
+                } catch (error) {
+                    console.error("❌ Lỗi parse JSON từ AI:", error);
+                }
+            }
+            aiResponse = aiResponse.replace(dataPattern, "").trim();
+        }
+        return aiResponse;
+    }
+
+    /**
+     * Gửi dữ liệu Lead lên Google Apps Script → Google Sheets
+     */
+    async function sendLeadToGoogleSheets(leadData, chatHistoryText) {
+        if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
+            console.warn("⚠️ Google Script URL chưa được cấu hình. Bỏ qua gửi Google Sheets.");
+            return;
+        }
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: leadData.name || '',
+                    phone: leadData.phone || '',
+                    email: leadData.email || '',
+                    source: window.location.href,
+                    sessionId: AI_CHAT_SESSION_ID,
+                    chatHistory: chatHistoryText,
+                    timestamp: new Date().toLocaleString('vi-VN')
+                })
+            });
+            console.log("📤 Đã đồng bộ dữ liệu vào Google Sheets!");
+        } catch (err) {
+            console.warn("⚠️ Không gửi được dữ liệu lead:", err);
+        }
+    }
+
+    // ============================================================
+    // CHATBOT CORE LOGIC
+    // ============================================================
     (function() {
         const refs = {
             toggle: document.getElementById('chat-toggle'),
@@ -891,6 +974,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fullName: name, email, subject: 'Phòng làm việc Entry', isChatSummary: true })
                 }).catch(() => {});
+
+                // Đồng bộ Google Sheets (primary)
+                sendLeadToGoogleSheets(
+                    { name: name, phone: '', email: email },
+                    '[Gate Form] Khách bắt đầu phiên chat với Kat'
+                );
                 
                 if (refs.input) refs.input.focus();
             });
@@ -902,6 +991,7 @@
         function formatContent(html) {
             if (!html) return '';
             html = html.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
+            html = html.replace(/\|\|LEAD_DATA:\s*\{.*?\}\s*\|\|/g, '');
 
             // Details
             html = html.replace(/\[DETAILS:(.*?)\](.*?)\[\/DETAILS\]/gs, (match, title, content) => {
@@ -995,6 +1085,12 @@
                     }
                 }
                 chatHistory.push({ role: "assistant", content: fullAiContent });
+
+                // Bóc tách lead data từ AI response → gửi Google Sheets
+                const cleanContent = processAIResponse(fullAiContent, chatHistory);
+                if (cleanContent !== fullAiContent && aiBubble) {
+                    aiBubble.innerHTML = formatContent(cleanContent);
+                }
             } catch (err) {
                 if (typingWrap && typingWrap.parentElement) typingWrap.parentElement.remove();
                 addBubble("Em gặp chút gián đoạn kết nối. Bạn vui lòng thử lại nhé.");
@@ -1110,6 +1206,21 @@
 
                 const result = await res.json();
                 if (res.ok) {
+                    // Đồng bộ Google Sheets (primary) — gửi song song với Notion
+                    const formDetails = [
+                        `[Contact Form]`,
+                        `Công ty: ${data.company || 'N/A'}`,
+                        `Chủ đề: ${data.subject || 'N/A'}`,
+                        `Nội dung: ${data.message || 'N/A'}`,
+                        data.portfolioLink ? `Portfolio: ${data.portfolioLink}` : '',
+                        data.bookingDate ? `Ngày đặt lịch: ${data.bookingDate}` : ''
+                    ].filter(Boolean).join('\n');
+
+                    sendLeadToGoogleSheets(
+                        { name: data.fullName, phone: '', email: data.email },
+                        formDetails
+                    );
+
                     status.innerHTML = `
                         <div class="bg-primary/5 p-5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div class="flex items-center gap-2 text-primary font-bold mb-3 uppercase tracking-wider text-sm">

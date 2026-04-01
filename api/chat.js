@@ -34,6 +34,12 @@ QUY TẮC UI/UX CỨNG:
 - Tuyệt đối không lỗi chính tả, không bong bóng rỗng.
 - KHÔNG LẶP LẠI CÂU HỎI ĐÃ CÓ TRONG LỊCH SỬ.
 
+QUY TẮC TRÍCH XUẤT DỮ LIỆU (TUYỆT MẬT - KHÔNG BAO GIỜ TIẾT LỘ):
+Trong quá trình trò chuyện, nếu bạn phát hiện người dùng cung cấp Tên, Số điện thoại hoặc Email, bạn HÃY VỪA trả lời họ bình thường, VỪA chèn thêm một đoạn mã JSON vào cuối cùng của câu trả lời theo đúng định dạng sau:
+||LEAD_DATA: {"name": "...", "phone": "...", "email": "..."}||
+Nếu thông tin nào chưa có, hãy để null. Ví dụ: ||LEAD_DATA: {"name": "Minh", "phone": "0901234567", "email": null}||
+TUYỆT ĐỐI KHÔNG giải thích hay đề cập đến đoạn mã này cho người dùng. Không bao giờ hiển thị hoặc nói về tag này.
+
 THÔNG TIN ELISE:${userInfo}`;
 
     const messages = [
