@@ -869,7 +869,7 @@
                 var snippet = cleanContent.length > 400 ? cleanContent.substring(0, 400) + '...' : cleanContent;
                 pairs.push('[' + (i+1) + '] ' + role + ': ' + snippet);
             }
-            formattedHistory = '=== LICH SU CHAT [' + chatHistoryArray.length + ' tin] - ' + new Date().toLocaleString('vi-VN') + ' ===\n\n' + pairs.join('\n\n');
+            formattedHistory = '=== LỊCH SỬ CHAT [' + chatHistoryArray.length + ' tin] - ' + new Date().toLocaleString('vi-VN') + ' ===\n\n' + pairs.join('\n\n');
         }
         // Lưu vào biến global để Contact Form có thể dùng
         if (formattedHistory) _chatHistoryText = formattedHistory;
@@ -908,20 +908,18 @@
                 name: leadData.name || '',
                 phone: leadData.phone || '',
                 email: leadData.email || '',
+                company: (extraFields && extraFields.company) || '',
+                subject: (extraFields && extraFields.subject) || '',
                 source: String(window.location.href),
                 sessionId: AI_CHAT_SESSION_ID,
                 chatHistory: chatHistoryText || '',
+                portfolioLink: (extraFields && extraFields.portfolioLink) || '',
+                attachmentName: (extraFields && extraFields.attachmentName) || '',
                 timestamp: new Date().toLocaleString('vi-VN')
             };
-            // Merge thêm các trường phụ (portfolioLink, attachmentName, company, subject...)
-            if (extraFields && typeof extraFields === 'object') {
-                for (var key in extraFields) {
-                    if (extraFields.hasOwnProperty(key)) {
-                        payloadObj[key] = extraFields[key];
-                    }
-                }
-            }
+
             const payload = JSON.stringify(payloadObj);
+            console.log("🚀 Payload gửi Google Sheets:", payloadObj);
 
             // Sử dụng text/plain để vượt qua CORS (no-cors mode)
             await fetch(GOOGLE_SCRIPT_URL, {
