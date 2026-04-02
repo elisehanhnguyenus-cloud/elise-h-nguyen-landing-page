@@ -886,6 +886,11 @@
                     if (leadData.name) _extractedLeadData.name = leadData.name;
                     if (leadData.phone) _extractedLeadData.phone = leadData.phone;
                     if (leadData.email) _extractedLeadData.email = leadData.email;
+                    if (leadData.interest) _extractedLeadData.interest = leadData.interest;
+                    if (leadData.intent_level) _extractedLeadData.intent_level = leadData.intent_level;
+
+                    // KÍCH HOẠT GỬI NGAY: Gửi dữ liệu vừa bóc được lên Google Sheets ngay lập tức
+                    sendLeadToGoogleSheets(leadData, _chatHistoryText);
                 } catch (error) {
                     console.error("❌ Lỗi parse JSON từ AI:", error);
                 }
@@ -915,7 +920,9 @@
                 chatHistory: chatHistoryText || '',
                 portfolioLink: (extraFields && extraFields.portfolioLink) || '',
                 attachmentName: (extraFields && extraFields.attachmentName) || '',
-                timestamp: new Date().toLocaleString('vi-VN')
+                timestamp: new Date().toLocaleString('vi-VN'),
+                interest: leadData.interest || (extraFields && extraFields.interest) || '',
+                intent_level: leadData.intent_level || (extraFields && extraFields.intent_level) || ''
             };
 
             const payload = JSON.stringify(payloadObj);
@@ -1214,7 +1221,7 @@
                 window.setTimeout(function() {
                     try {
                         sendLeadToGoogleSheets(
-                            { name: fullName, phone: mergedPhone, email: email },
+                            { name: fullName, phone: mergedPhone, email: email, interest: _extractedLeadData.interest || '', intent_level: _extractedLeadData.intent_level || '' },
                             fullChatLog,
                             {
                                 company: company,

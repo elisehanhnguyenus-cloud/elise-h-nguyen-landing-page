@@ -1,0 +1,1054 @@
+<script>
+/**
+ * ==========================================================
+ * HỆ THỐNG QUẢN LÝ KHO HÀNG — FRONTEND JAVASCRIPT
+ * ==========================================================
+ * 
+ * File này xử lý:
+ * 1. Đăng nhập & Phân quyền UI
+ * 2. Dashboard (Google Charts)
+ * 3. CRUD Sản phẩm
+ * 4. Nhập/Xuất kho
+ * 5. Cảnh báo tồn kho
+ * 6. CRUD Nhà cung cấp
+ * 7. CRUD Users
+ */
+
+// ============================================================
+// BIẾN GLOBAL
+// ============================================================
+let currentUser = null;        // Thông tin user đang đăng nhập
+let categoriesCache = [];      // Cache danh mục
+let suppliersCache = [];       // Cache NCC
+let productsCache = [];        // Cache sản phẩm
+
+// ============================================================
+// 1. ĐĂNG NHẬP & PHÂN QUYỀN
+// ============================================================
+
+/**
+ * Khởi chạy khi trang tải xong
+ * Kiểm tra localStorage để auto-login
+ */
+window.onload = function() {
+  // Kiểm tra có session đăng nhập cũ không
+  var savedUser = localStorage.getItem('warehouse_user');
+  if (savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+      showMainContent();
+    } catch (e) {
+      localStorage.removeItem('warehouse_user');
+    }
+  }
+};
+
+/**
+ * Xử lý form đăng nhập
+ */
+function handleLogin(event) {
+  event.preventDefault();
+  
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value;
+  
+  // Ẩn lỗi cũ
+  document.getElementById('login-error').classList.add('d-none');
+  
+  // Hiện loading trên nút
+  document.getElementById('login-btn-text').textContent = 'Đang đăng nhập...';
+  document.getElementById('login-btn-spinner').classList.remove('d-none');
+  document.getElementById('login-btn').disabled = true;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      document.getElementById('login-btn-text').textContent = 'Đăng nhập';
+      document.getElementById('login-btn-spinner').classList.add('d-none');
+      document.getElementById('login-btn').disabled = false;
+      
+      if (result.success) {
+        // Đăng nhập thành công
+        currentUser = result;
+        
+        // Lưu vào localStorage (giữ đăng nhập khi refresh)
+        localStorage.setItem('warehouse_user', JSON.stringify(result));
+        
+        showMainContent();
+      } else {
+        // Đăng nhập thất bại
+        document.getElementById('login-error').classList.remove('d-none');
+        document.getElementById('login-error-text').textContent = result.message;
+      }
+    })
+    .withFailureHandler(function(err) {
+      document.getElementById('login-btn-text').textContent = 'Đăng nhập';
+      document.getElementById('login-btn-spinner').classList.add('d-none');
+      document.getElementById('login-btn').disabled = false;
+      
+      document.getElementById('login-error').classList.remove('d-none');
+      document.getElementById('login-error-text').textContent = 'Lỗi hệ thống: ' + err.message;
+    })
+    .checkLogin(email, password);
+}
+
+/**
+ * Hiển thị nội dung chính sau khi đăng nhập
+ */
+function showMainContent() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('access-denied').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+  
+  // Hiển thị tên user
+  document.getElementById('user-display').textContent = 
+    currentUser.fullName + ' (' + getRoleLabel(currentUser.role) + ')';
+  
+  // Áp dụng phân quyền UI
+  applyPermissions(currentUser.role);
+  
+  // Tải dữ liệu ban đầu
+  loadDashboard();
+  loadCategoriesCache();
+  loadSuppliersCache();
+}
+
+/**
+ * Áp dụng phân quyền giao diện dựa trên role
+ */
+function applyPermissions(role) {
+  // Ẩn tab "Nhà cung cấp" và "Quản lý Users" — chỉ admin thấy
+  if (role !== 'admin') {
+    document.getElementById('tab-suppliers').style.display = 'none';
+    document.getElementById('tab-users').style.display = 'none';
+  }
+  
+  // Ẩn các nút chỉ admin thấy (Thêm/Sửa/Xóa sản phẩm)
+  if (role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(function(el) {
+      el.style.display = 'none';
+    });
+  }
+  
+  // Ẩn form Nhập/Xuất kho — viewer không được thao tác
+  if (role === 'viewer') {
+    document.querySelectorAll('.staff-only').forEach(function(el) {
+      el.style.display = 'none';
+    });
+  }
+}
+
+/**
+ * Đăng xuất
+ */
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('warehouse_user');
+  
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('access-denied').style.display = 'none';
+  document.getElementById('login-screen').style.display = '';
+  
+  // Reset form
+  document.getElementById('login-form').reset();
+  document.getElementById('login-error').classList.add('d-none');
+}
+
+/**
+ * Toggle hiện/ẩn mật khẩu
+ */
+function togglePassword() {
+  var input = document.getElementById('login-password');
+  var icon = document.getElementById('toggle-pw-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'bi bi-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'bi bi-eye';
+  }
+}
+
+// ============================================================
+// 2. TAB NAVIGATION
+// ============================================================
+
+function switchTab(tabName) {
+  // Ẩn tất cả panels
+  document.querySelectorAll('.tab-panel').forEach(function(el) {
+    el.style.display = 'none';
+  });
+  
+  // Bỏ active tất cả tab links
+  document.querySelectorAll('.tab-nav .nav-link').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  
+  // Hiện panel được chọn
+  document.getElementById('panel-' + tabName).style.display = 'block';
+  
+  // Active tab link
+  document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
+  
+  // Tải dữ liệu cho tab
+  switch(tabName) {
+    case 'dashboard': loadDashboard(); break;
+    case 'products': loadProducts(); break;
+    case 'transactions': loadTransactions(); loadProductsForDropdown(); break;
+    case 'alerts': loadAlerts(); break;
+    case 'suppliers': loadSuppliers(); break;
+    case 'users': loadUsers(); break;
+  }
+}
+
+// ============================================================
+// 3. DASHBOARD
+// ============================================================
+
+function loadDashboard() {
+  showLoading();
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      
+      if (!result.success) {
+        showToast('error', 'Lỗi tải Dashboard: ' + result.error);
+        return;
+      }
+      
+      // Cập nhật summary cards
+      document.getElementById('total-products').textContent = result.totalProducts;
+      document.getElementById('monthly-trans').textContent = result.monthlyTransactions;
+      document.getElementById('low-stock').textContent = result.lowStockCount;
+      document.getElementById('total-value').textContent = formatCurrency(result.totalValue);
+      
+      // Cập nhật badge cảnh báo
+      if (result.lowStockCount > 0) {
+        var badge = document.querySelector('.alert-count-badge');
+        badge.textContent = result.lowStockCount;
+        badge.style.display = 'inline';
+      }
+      
+      // Vẽ charts
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(function() {
+        drawPieChart(result.pieData);
+        drawBarChart(result.barData);
+      });
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      showToast('error', 'Lỗi: ' + err.message);
+    })
+    .getDashboardData();
+}
+
+function drawPieChart(data) {
+  var chartData = google.visualization.arrayToDataTable(data);
+  var options = {
+    backgroundColor: 'transparent',
+    chartArea: { width: '90%', height: '80%' },
+    legend: { position: 'right', textStyle: { fontSize: 12, fontName: 'Inter' } },
+    pieHole: 0.4,
+    colors: ['#4361ee', '#06d6a0', '#ffd166', '#ef476f', '#7209b7'],
+    pieSliceTextStyle: { fontSize: 11 }
+  };
+  var chart = new google.visualization.PieChart(document.getElementById('pie-chart'));
+  chart.draw(chartData, options);
+}
+
+function drawBarChart(data) {
+  var chartData = google.visualization.arrayToDataTable(data);
+  var options = {
+    backgroundColor: 'transparent',
+    chartArea: { width: '75%', height: '75%' },
+    legend: 'none',
+    hAxis: { textStyle: { fontSize: 11, fontName: 'Inter' } },
+    vAxis: { textStyle: { fontSize: 11, fontName: 'Inter' }, minValue: 0 },
+    bar: { groupWidth: '60%' },
+    animation: { startup: true, duration: 600, easing: 'out' }
+  };
+  var chart = new google.visualization.ColumnChart(document.getElementById('bar-chart'));
+  chart.draw(chartData, options);
+}
+
+// ============================================================
+// 4. SẢN PHẨM (CRUD)
+// ============================================================
+
+function loadProducts() {
+  var tbody = document.getElementById('products-table');
+  tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">' + result.error + '</td></tr>';
+        return;
+      }
+      
+      productsCache = result.data;
+      
+      if (result.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Chưa có sản phẩm nào</td></tr>';
+        return;
+      }
+      
+      var html = '';
+      result.data.forEach(function(p) {
+        var statusBadge = '';
+        if (p.status === 'sufficient') statusBadge = '<span class="badge-sufficient">🟢 Đủ hàng</span>';
+        else if (p.status === 'warning') statusBadge = '<span class="badge-warning">🟡 Sắp hết</span>';
+        else statusBadge = '<span class="badge-critical">🔴 Hết hàng</span>';
+        
+        html += '<tr>';
+        html += '<td><strong>' + p.productId + '</strong></td>';
+        html += '<td>' + p.productName + '</td>';
+        html += '<td>' + p.catName + '</td>';
+        html += '<td>' + p.supplierName + '</td>';
+        html += '<td>' + p.unit + '</td>';
+        html += '<td class="text-end">' + formatCurrency(p.unitPrice) + '</td>';
+        html += '<td class="text-center"><strong>' + p.currentStock + '</strong></td>';
+        html += '<td class="text-center">' + p.minStock + '</td>';
+        html += '<td class="text-center">' + statusBadge + '</td>';
+        html += '<td class="text-center admin-only">';
+        html += '<button class="btn btn-outline-primary btn-action me-1" onclick="editProduct(\'' + p.productId + '\')" title="Sửa"><i class="bi bi-pencil"></i></button>';
+        html += '<button class="btn btn-outline-danger btn-action" onclick="confirmDeleteProduct(\'' + p.productId + '\')" title="Xóa"><i class="bi bi-trash"></i></button>';
+        html += '</td>';
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+      
+      // Áp dụng lại phân quyền (vì innerHTML tạo elements mới)
+      if (currentUser.role !== 'admin') {
+        document.querySelectorAll('.admin-only').forEach(function(el) {
+          el.style.display = 'none';
+        });
+      }
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Lỗi: ' + err.message + '</td></tr>';
+    })
+    .getProducts();
+}
+
+/**
+ * Hiện modal thêm sản phẩm
+ */
+function showProductModal() {
+  document.getElementById('productModalTitle').innerHTML = '<i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm mới';
+  document.getElementById('prod-mode').value = 'add';
+  document.getElementById('product-form').reset();
+  
+  // Tạo mã SP mới
+  google.script.run
+    .withSuccessHandler(function(id) {
+      document.getElementById('prod-code').value = id;
+      document.getElementById('prod-id').value = id;
+    })
+    .generateProductId();
+  
+  // Populate dropdowns
+  populateCategoryDropdown('prod-category');
+  populateSupplierDropdown('prod-supplier');
+  
+  new bootstrap.Modal(document.getElementById('productModal')).show();
+}
+
+/**
+ * Sửa sản phẩm
+ */
+function editProduct(productId) {
+  var product = productsCache.find(function(p) { return p.productId === productId; });
+  if (!product) return;
+  
+  document.getElementById('productModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Sửa sản phẩm';
+  document.getElementById('prod-mode').value = 'edit';
+  document.getElementById('prod-id').value = product.productId;
+  document.getElementById('prod-code').value = product.productId;
+  document.getElementById('prod-name').value = product.productName;
+  document.getElementById('prod-unit').value = product.unit;
+  document.getElementById('prod-price').value = product.unitPrice;
+  document.getElementById('prod-min').value = product.minStock;
+  
+  populateCategoryDropdown('prod-category', product.catId);
+  populateSupplierDropdown('prod-supplier', product.supplierId);
+  
+  new bootstrap.Modal(document.getElementById('productModal')).show();
+}
+
+/**
+ * Lưu sản phẩm (thêm hoặc sửa)
+ */
+function handleSaveProduct(event) {
+  event.preventDefault();
+  
+  var mode = document.getElementById('prod-mode').value;
+  var productData = {
+    productId: document.getElementById('prod-id').value,
+    productName: document.getElementById('prod-name').value.trim(),
+    catId: document.getElementById('prod-category').value,
+    supplierId: document.getElementById('prod-supplier').value,
+    unit: document.getElementById('prod-unit').value.trim(),
+    unitPrice: document.getElementById('prod-price').value,
+    minStock: document.getElementById('prod-min').value
+  };
+  
+  showLoading();
+  
+  var callback = function(result) {
+    hideLoading();
+    if (result.success) {
+      showToast('success', result.message);
+      bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+      loadProducts();
+    } else {
+      showToast('error', result.error);
+    }
+  };
+  
+  var errorHandler = function(err) {
+    hideLoading();
+    showToast('error', 'Lỗi: ' + err.message);
+  };
+  
+  if (mode === 'add') {
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .addProduct(productData, currentUser.email);
+  } else {
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .updateProduct(productData, currentUser.email);
+  }
+}
+
+/**
+ * Xác nhận xóa sản phẩm
+ */
+function confirmDeleteProduct(productId) {
+  document.getElementById('confirm-message').textContent = 'Bạn có chắc chắn muốn xóa sản phẩm ' + productId + '?';
+  document.getElementById('confirm-btn').onclick = function() {
+    deleteProductAction(productId);
+  };
+  new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+function deleteProductAction(productId) {
+  showLoading();
+  bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('success', result.message);
+        loadProducts();
+      } else {
+        showToast('error', result.error);
+      }
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      showToast('error', 'Lỗi: ' + err.message);
+    })
+    .deleteProduct(productId, currentUser.email);
+}
+
+// ============================================================
+// 5. NHẬP / XUẤT KHO
+// ============================================================
+
+function loadTransactions() {
+  var tbody = document.getElementById('transactions-table');
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">' + result.error + '</td></tr>';
+        return;
+      }
+      
+      if (result.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Chưa có giao dịch nào</td></tr>';
+        return;
+      }
+      
+      var html = '';
+      result.data.forEach(function(t) {
+        var typeBadge = t.type === 'Nhập' 
+          ? '<span class="badge-nhap">📥 Nhập</span>' 
+          : '<span class="badge-xuat">📤 Xuất</span>';
+        
+        html += '<tr>';
+        html += '<td><small><strong>' + t.transId + '</strong></small></td>';
+        html += '<td>' + t.productName + '</td>';
+        html += '<td class="text-center">' + typeBadge + '</td>';
+        html += '<td class="text-end"><strong>' + t.quantity + '</strong></td>';
+        html += '<td>' + (t.supplierName || '—') + '</td>';
+        html += '<td>' + t.createdBy + '</td>';
+        html += '<td><small>' + t.createdAt + '</small></td>';
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi: ' + err.message + '</td></tr>';
+    })
+    .getTransactions();
+}
+
+/**
+ * Load dropdown sản phẩm cho form giao dịch
+ */
+function loadProductsForDropdown() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) return;
+      
+      productsCache = result.data;
+      var select = document.getElementById('trans-product');
+      select.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
+      
+      result.data.forEach(function(p) {
+        var opt = document.createElement('option');
+        opt.value = p.productId;
+        opt.textContent = p.productId + ' — ' + p.productName + ' (Tồn: ' + p.currentStock + ' ' + p.unit + ')';
+        select.appendChild(opt);
+      });
+      
+      // Populate supplier dropdown cho giao dịch
+      populateSupplierDropdown('trans-supplier');
+    })
+    .getProducts();
+}
+
+/**
+ * Khi đổi loại giao dịch (Nhập/Xuất)
+ */
+function onTransTypeChange() {
+  var type = document.getElementById('trans-type').value;
+  var supGroup = document.getElementById('trans-supplier-group');
+  
+  if (type === 'Nhập') {
+    supGroup.style.display = 'block';
+    document.getElementById('trans-supplier').required = true;
+  } else {
+    supGroup.style.display = 'none';
+    document.getElementById('trans-supplier').required = false;
+  }
+}
+
+/**
+ * Khi chọn sản phẩm — hiện thông tin tồn kho
+ */
+function onTransProductChange() {
+  var productId = document.getElementById('trans-product').value;
+  var stockInfo = document.getElementById('trans-stock-info');
+  
+  if (!productId) {
+    stockInfo.textContent = '';
+    return;
+  }
+  
+  var product = productsCache.find(function(p) { return p.productId === productId; });
+  if (product) {
+    stockInfo.innerHTML = '📦 Tồn kho hiện tại: <strong>' + product.currentStock + ' ' + product.unit + '</strong>';
+  }
+}
+
+/**
+ * Tạo phiếu nhập/xuất kho
+ */
+function handleCreateTransaction(event) {
+  event.preventDefault();
+  
+  var transData = {
+    type: document.getElementById('trans-type').value,
+    productId: document.getElementById('trans-product').value,
+    quantity: document.getElementById('trans-quantity').value,
+    supplierId: document.getElementById('trans-supplier').value,
+    note: document.getElementById('trans-note').value.trim()
+  };
+  
+  // Validate
+  if (!transData.type) {
+    showToast('error', 'Vui lòng chọn loại giao dịch!');
+    return;
+  }
+  
+  if (parseFloat(transData.quantity) <= 0) {
+    showToast('error', 'Số lượng phải lớn hơn 0!');
+    return;
+  }
+  
+  showLoading();
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('success', result.message);
+        document.getElementById('transaction-form').reset();
+        document.getElementById('trans-supplier-group').style.display = 'none';
+        document.getElementById('trans-stock-info').textContent = '';
+        loadTransactions();
+        loadProductsForDropdown(); // Refresh tồn kho trong dropdown
+      } else {
+        showToast('error', result.error);
+      }
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      showToast('error', 'Lỗi: ' + err.message);
+    })
+    .createTransaction(transData, currentUser.email);
+}
+
+// ============================================================
+// 6. CẢNH BÁO TỒN KHO
+// ============================================================
+
+function loadAlerts() {
+  var tbody = document.getElementById('alerts-table');
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">' + result.error + '</td></tr>';
+        return;
+      }
+      
+      if (result.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-success py-4"><i class="bi bi-check-circle-fill me-2"></i>Tất cả sản phẩm đều đủ hàng!</td></tr>';
+        return;
+      }
+      
+      var html = '';
+      result.data.forEach(function(a) {
+        html += '<tr class="table-danger">';
+        html += '<td><strong>' + a.productId + '</strong></td>';
+        html += '<td>' + a.productName + '</td>';
+        html += '<td>' + a.catName + '</td>';
+        html += '<td class="text-center"><span class="badge-critical"><strong>' + a.currentStock + '</strong> ' + a.unit + '</span></td>';
+        html += '<td class="text-center">' + a.minStock + ' ' + a.unit + '</td>';
+        html += '<td>' + a.supplierName + '</td>';
+        html += '<td>' + a.supplierPhone + '</td>';
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+      
+      // Cập nhật badge
+      var badge = document.querySelector('.alert-count-badge');
+      badge.textContent = result.data.length;
+      badge.style.display = result.data.length > 0 ? 'inline' : 'none';
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi: ' + err.message + '</td></tr>';
+    })
+    .getStockAlerts();
+}
+
+/**
+ * Gửi email cảnh báo (nút "Gửi cảnh báo ngay")
+ */
+function sendAlertEmails() {
+  if (!confirm('Gửi email cảnh báo tồn kho thấp đến tất cả người nhận Active?')) return;
+  
+  showLoading();
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('success', result.message);
+      } else {
+        showToast('error', result.error);
+      }
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      showToast('error', 'Lỗi: ' + err.message);
+    })
+    .sendManualAlertEmails(currentUser.email);
+}
+
+// ============================================================
+// 7. NHÀ CUNG CẤP (CRUD) — Chỉ Admin
+// ============================================================
+
+function loadSuppliers() {
+  var tbody = document.getElementById('suppliers-table');
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">' + result.error + '</td></tr>';
+        return;
+      }
+      
+      suppliersCache = result.data;
+      
+      if (result.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Chưa có NCC nào</td></tr>';
+        return;
+      }
+      
+      var html = '';
+      result.data.forEach(function(s) {
+        html += '<tr>';
+        html += '<td><strong>' + s.supplierId + '</strong></td>';
+        html += '<td>' + s.supplierName + '</td>';
+        html += '<td>' + s.contactPerson + '</td>';
+        html += '<td>' + s.phone + '</td>';
+        html += '<td>' + (s.email || '') + '</td>';
+        html += '<td>' + (s.address || '') + '</td>';
+        html += '<td class="text-center">';
+        html += '<button class="btn btn-outline-primary btn-action me-1" onclick="editSupplier(\'' + s.supplierId + '\')" title="Sửa"><i class="bi bi-pencil"></i></button>';
+        html += '<button class="btn btn-outline-danger btn-action" onclick="confirmDeleteSupplier(\'' + s.supplierId + '\')" title="Xóa"><i class="bi bi-trash"></i></button>';
+        html += '</td>';
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi: ' + err.message + '</td></tr>';
+    })
+    .getSuppliers(currentUser.email);
+}
+
+function showSupplierModal() {
+  document.getElementById('supplierModalTitle').innerHTML = '<i class="bi bi-plus-lg me-2"></i>Thêm nhà cung cấp';
+  document.getElementById('sup-mode').value = 'add';
+  document.getElementById('supplier-form').reset();
+  
+  google.script.run
+    .withSuccessHandler(function(id) {
+      document.getElementById('sup-code').value = id;
+      document.getElementById('sup-id').value = id;
+    })
+    .generateSupplierId();
+  
+  new bootstrap.Modal(document.getElementById('supplierModal')).show();
+}
+
+function editSupplier(supplierId) {
+  var supplier = suppliersCache.find(function(s) { return s.supplierId === supplierId; });
+  if (!supplier) return;
+  
+  document.getElementById('supplierModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Sửa nhà cung cấp';
+  document.getElementById('sup-mode').value = 'edit';
+  document.getElementById('sup-id').value = supplier.supplierId;
+  document.getElementById('sup-code').value = supplier.supplierId;
+  document.getElementById('sup-name').value = supplier.supplierName;
+  document.getElementById('sup-contact').value = supplier.contactPerson;
+  document.getElementById('sup-phone').value = supplier.phone;
+  document.getElementById('sup-email').value = supplier.email || '';
+  document.getElementById('sup-address').value = supplier.address || '';
+  
+  new bootstrap.Modal(document.getElementById('supplierModal')).show();
+}
+
+function handleSaveSupplier(event) {
+  event.preventDefault();
+  
+  var mode = document.getElementById('sup-mode').value;
+  var supplierData = {
+    supplierId: document.getElementById('sup-id').value,
+    supplierName: document.getElementById('sup-name').value.trim(),
+    contactPerson: document.getElementById('sup-contact').value.trim(),
+    phone: document.getElementById('sup-phone').value.trim(),
+    email: document.getElementById('sup-email').value.trim(),
+    address: document.getElementById('sup-address').value.trim()
+  };
+  
+  showLoading();
+  
+  var callback = function(result) {
+    hideLoading();
+    if (result.success) {
+      showToast('success', result.message);
+      bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide();
+      loadSuppliers();
+      loadSuppliersCache();
+    } else {
+      showToast('error', result.error);
+    }
+  };
+  
+  var errorHandler = function(err) {
+    hideLoading();
+    showToast('error', 'Lỗi: ' + err.message);
+  };
+  
+  if (mode === 'add') {
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .addSupplier(supplierData, currentUser.email);
+  } else {
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .updateSupplier(supplierData, currentUser.email);
+  }
+}
+
+function confirmDeleteSupplier(supplierId) {
+  document.getElementById('confirm-message').textContent = 'Bạn có chắc chắn muốn xóa nhà cung cấp ' + supplierId + '?';
+  document.getElementById('confirm-btn').onclick = function() {
+    deleteSupplierAction(supplierId);
+  };
+  new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+function deleteSupplierAction(supplierId) {
+  showLoading();
+  bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      hideLoading();
+      if (result.success) {
+        showToast('success', result.message);
+        loadSuppliers();
+        loadSuppliersCache();
+      } else {
+        showToast('error', result.error);
+      }
+    })
+    .withFailureHandler(function(err) {
+      hideLoading();
+      showToast('error', 'Lỗi: ' + err.message);
+    })
+    .deleteSupplier(supplierId, currentUser.email);
+}
+
+// ============================================================
+// 8. QUẢN LÝ USERS (CRUD) — Chỉ Admin
+// ============================================================
+
+function loadUsers() {
+  var tbody = document.getElementById('users-table');
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (!result.success) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">' + result.error + '</td></tr>';
+        return;
+      }
+      
+      var html = '';
+      result.data.forEach(function(u) {
+        var roleBadge = '';
+        if (u.role === 'admin') roleBadge = '<span class="badge-role-admin">Admin</span>';
+        else if (u.role === 'warehouse_staff') roleBadge = '<span class="badge-role-staff">Nhân viên kho</span>';
+        else roleBadge = '<span class="badge-role-viewer">Người xem</span>';
+        
+        var statusBadge = u.active 
+          ? '<span class="badge-sufficient">✅ Active</span>'
+          : '<span class="badge-critical">❌ Inactive</span>';
+        
+        html += '<tr>';
+        html += '<td><strong>' + u.userId + '</strong></td>';
+        html += '<td>' + u.email + '</td>';
+        html += '<td>' + u.fullName + '</td>';
+        html += '<td class="text-center">' + roleBadge + '</td>';
+        html += '<td class="text-center">' + statusBadge + '</td>';
+        html += '<td class="text-center">';
+        html += '<button class="btn btn-outline-primary btn-action" onclick="editUser(\'' + u.userId + '\', \'' + u.email + '\', \'' + u.fullName + '\', \'' + u.role + '\', ' + u.active + ')" title="Sửa"><i class="bi bi-pencil"></i></button>';
+        html += '</td>';
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Lỗi: ' + err.message + '</td></tr>';
+    })
+    .getUsers(currentUser.email);
+}
+
+function showUserModal() {
+  document.getElementById('userModalTitle').innerHTML = '<i class="bi bi-person-plus me-2"></i>Thêm người dùng';
+  document.getElementById('user-mode').value = 'add';
+  document.getElementById('user-form').reset();
+  document.getElementById('user-email').readOnly = false;
+  document.getElementById('user-password').required = true;
+  document.getElementById('pw-required').style.display = '';
+  document.getElementById('pw-hint').style.display = 'none';
+  document.getElementById('user-password').placeholder = 'Mật khẩu (mặc định: 123456)';
+  
+  new bootstrap.Modal(document.getElementById('userModal')).show();
+}
+
+function editUser(userId, email, fullName, role, active) {
+  document.getElementById('userModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Sửa người dùng';
+  document.getElementById('user-mode').value = 'edit';
+  document.getElementById('user-id').value = userId;
+  document.getElementById('user-email').value = email;
+  document.getElementById('user-email').readOnly = true;
+  document.getElementById('user-fullname').value = fullName;
+  document.getElementById('user-role').value = role;
+  document.getElementById('user-active').value = active.toString();
+  document.getElementById('user-password').value = '';
+  document.getElementById('user-password').required = false;
+  document.getElementById('pw-required').style.display = 'none';
+  document.getElementById('pw-hint').style.display = '';
+  document.getElementById('user-password').placeholder = 'Để trống nếu không đổi';
+  
+  new bootstrap.Modal(document.getElementById('userModal')).show();
+}
+
+function handleSaveUser(event) {
+  event.preventDefault();
+  
+  var mode = document.getElementById('user-mode').value;
+  var userData = {
+    userId: document.getElementById('user-id').value,
+    email: document.getElementById('user-email').value.trim(),
+    password: document.getElementById('user-password').value,
+    fullName: document.getElementById('user-fullname').value.trim(),
+    role: document.getElementById('user-role').value,
+    active: document.getElementById('user-active').value === 'true'
+  };
+  
+  showLoading();
+  
+  var callback = function(result) {
+    hideLoading();
+    if (result.success) {
+      showToast('success', result.message);
+      bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+      loadUsers();
+    } else {
+      showToast('error', result.error);
+    }
+  };
+  
+  var errorHandler = function(err) {
+    hideLoading();
+    showToast('error', 'Lỗi: ' + err.message);
+  };
+  
+  if (mode === 'add') {
+    if (!userData.password) userData.password = '123456';
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .addUser(userData, currentUser.email);
+  } else {
+    google.script.run.withSuccessHandler(callback).withFailureHandler(errorHandler)
+      .updateUser(userData, currentUser.email);
+  }
+}
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+/**
+ * Load cache danh mục
+ */
+function loadCategoriesCache() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) categoriesCache = result.data;
+    })
+    .getCategories();
+}
+
+/**
+ * Load cache nhà cung cấp
+ */
+function loadSuppliersCache() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) suppliersCache = result.data;
+    })
+    .getSuppliers(currentUser ? currentUser.email : '');
+}
+
+/**
+ * Populate dropdown danh mục
+ */
+function populateCategoryDropdown(selectId, selectedValue) {
+  var select = document.getElementById(selectId);
+  select.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+  categoriesCache.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c.catId;
+    opt.textContent = c.catName;
+    if (selectedValue && c.catId === selectedValue) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+/**
+ * Populate dropdown nhà cung cấp
+ */
+function populateSupplierDropdown(selectId, selectedValue) {
+  var select = document.getElementById(selectId);
+  select.innerHTML = '<option value="">-- Chọn NCC --</option>';
+  suppliersCache.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s.supplierId;
+    opt.textContent = s.supplierName;
+    if (selectedValue && s.supplierId === selectedValue) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+/**
+ * Format số tiền VNĐ
+ */
+function formatCurrency(amount) {
+  if (amount >= 1000000000) {
+    return (amount / 1000000000).toFixed(1) + ' tỷ';
+  }
+  if (amount >= 1000000) {
+    return (amount / 1000000).toFixed(1) + ' tr';
+  }
+  return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+}
+
+/**
+ * Hiển thị label role dễ đọc
+ */
+function getRoleLabel(role) {
+  switch(role) {
+    case 'admin': return 'Quản trị viên';
+    case 'warehouse_staff': return 'Nhân viên kho';
+    case 'viewer': return 'Người xem';
+    default: return role;
+  }
+}
+
+/**
+ * Hiện loading overlay
+ */
+function showLoading() {
+  document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+/**
+ * Ẩn loading overlay
+ */
+function hideLoading() {
+  document.getElementById('loading-overlay').style.display = 'none';
+}
+
+/**
+ * Hiển thị toast notification
+ * @param {string} type - 'success' hoặc 'error'
+ * @param {string} message - Nội dung thông báo
+ */
+function showToast(type, message) {
+  var toastEl = document.getElementById('toast-' + type);
+  var msgEl = toastEl.querySelector('span');
+  msgEl.textContent = message;
+  
+  var toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+  toast.show();
+}
+</script>

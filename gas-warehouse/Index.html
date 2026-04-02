@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Charts -->
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  
+  <!-- Custom CSS (Server-side Include) -->
+  <?!= include('CSS'); ?>
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- LOADING OVERLAY                                               -->
+  <!-- ============================================================ -->
+  <div id="loading-overlay" class="loading-overlay" style="display:none;">
+    <div class="spinner-wrapper">
+      <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+      <p class="mt-3 text-muted">Đang xử lý...</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TOAST NOTIFICATIONS                                           -->
+  <!-- ============================================================ -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+    <div id="toast-success" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-success-msg">
+          <i class="bi bi-check-circle-fill me-2"></i><span></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+    <div id="toast-error" class="toast align-items-center text-bg-danger border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-error-msg">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i><span></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MÀN HÌNH ĐĂNG NHẬP                                           -->
+  <!-- ============================================================ -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">
+          <i class="bi bi-box-seam-fill"></i>
+        </div>
+        <h2>Hệ thống Quản lý Kho</h2>
+        <p class="text-muted">Đăng nhập để tiếp tục</p>
+      </div>
+      
+      <div id="login-error" class="alert alert-danger d-none" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span id="login-error-text"></span>
+      </div>
+      
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-envelope me-1"></i>Email</label>
+          <input type="email" class="form-control form-control-lg" id="login-email" 
+                 placeholder="Nhập email..." required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-lock me-1"></i>Mật khẩu</label>
+          <div class="input-group">
+            <input type="password" class="form-control form-control-lg" id="login-password" 
+                   placeholder="Nhập mật khẩu..." required>
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+              <i class="bi bi-eye" id="toggle-pw-icon"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100" id="login-btn">
+          <span id="login-btn-text">Đăng nhập</span>
+          <span id="login-btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
+        </button>
+      </form>
+      
+      <div class="login-footer">
+        <small class="text-muted">
+          <i class="bi bi-shield-lock me-1"></i>Bảo mật bởi Google Apps Script
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TRANG ACCESS DENIED                                           -->
+  <!-- ============================================================ -->
+  <div id="access-denied" class="access-denied" style="display:none;">
+    <div class="text-center">
+      <i class="bi bi-shield-x" style="font-size:5rem;color:var(--danger);"></i>
+      <h2 class="mt-3">⛔ Truy cập bị từ chối</h2>
+      <p id="error-message" class="text-muted fs-5"></p>
+      <p>Vui lòng liên hệ Admin để được cấp quyền.</p>
+      <button class="btn btn-outline-primary" onclick="logout()">
+        <i class="bi bi-arrow-left me-2"></i>Quay lại đăng nhập
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MAIN CONTENT (ẩn cho đến khi đăng nhập xong)                  -->
+  <!-- ============================================================ -->
+  <div id="main-content" style="display:none;">
+    
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg main-navbar">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-box-seam-fill me-2"></i>Quản lý Kho
+        </a>
+        <div class="d-flex align-items-center gap-3">
+          <div class="user-badge">
+            <i class="bi bi-person-circle me-1"></i>
+            <span id="user-display">Loading...</span>
+          </div>
+          <button class="btn btn-outline-light btn-sm" onclick="logout()">
+            <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- TAB NAVIGATION -->
+    <div class="container-fluid mt-3">
+      <ul class="nav nav-pills nav-fill mb-3 tab-nav" id="mainTabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-tab="dashboard" onclick="switchTab('dashboard')">
+            <i class="bi bi-speedometer2 me-1"></i>Tổng quan
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="products" onclick="switchTab('products')">
+            <i class="bi bi-box-seam me-1"></i>Sản phẩm
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="transactions" onclick="switchTab('transactions')">
+            <i class="bi bi-clipboard-data me-1"></i>Nhập/Xuất kho
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="alerts" onclick="switchTab('alerts')">
+            <i class="bi bi-exclamation-triangle me-1"></i>Cảnh báo
+            <span class="badge bg-danger ms-1 alert-count-badge" style="display:none;">0</span>
+          </a>
+        </li>
+        <li class="nav-item" id="tab-suppliers">
+          <a class="nav-link" data-tab="suppliers" onclick="switchTab('suppliers')">
+            <i class="bi bi-people me-1"></i>Nhà cung cấp
+          </a>
+        </li>
+        <li class="nav-item" id="tab-users">
+          <a class="nav-link" data-tab="users" onclick="switchTab('users')">
+            <i class="bi bi-shield-lock me-1"></i>Quản lý Users
+          </a>
+        </li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: DASHBOARD                                              -->
+      <!-- ============================================================ -->
+      <div id="panel-dashboard" class="tab-panel">
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-lg-3 col-md-6">
+            <div class="summary-card card-blue">
+              <div class="card-icon"><i class="bi bi-box-seam"></i></div>
+              <div class="card-info">
+                <h6>Tổng sản phẩm</h6>
+                <h2 id="total-products">0</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <div class="summary-card card-green">
+              <div class="card-icon"><i class="bi bi-arrow-left-right"></i></div>
+              <div class="card-info">
+                <h6>Giao dịch tháng</h6>
+                <h2 id="monthly-trans">0</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <div class="summary-card card-orange">
+              <div class="card-icon"><i class="bi bi-exclamation-triangle"></i></div>
+              <div class="card-info">
+                <h6>Sắp hết hàng</h6>
+                <h2 id="low-stock">0</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <div class="summary-card card-purple">
+              <div class="card-icon"><i class="bi bi-cash-stack"></i></div>
+              <div class="card-info">
+                <h6>Giá trị tồn kho</h6>
+                <h2 id="total-value">0</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="chart-card">
+              <h5><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Tỷ lệ tồn kho theo danh mục</h5>
+              <div id="pie-chart" style="width:100%;height:350px;"></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-card">
+              <h5><i class="bi bi-bar-chart-fill me-2 text-success"></i>Top 5 sản phẩm tồn kho nhiều nhất</h5>
+              <div id="bar-chart" style="width:100%;height:350px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: SẢN PHẨM                                              -->
+      <!-- ============================================================ -->
+      <div id="panel-products" class="tab-panel" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4><i class="bi bi-box-seam me-2"></i>Danh sách Sản phẩm</h4>
+          <button class="btn btn-primary admin-only" onclick="showProductModal()">
+            <i class="bi bi-plus-lg me-1"></i>Thêm sản phẩm
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-custom">
+            <thead>
+              <tr>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>NCC</th>
+                <th>ĐVT</th>
+                <th class="text-end">Đơn giá</th>
+                <th class="text-center">Tồn kho</th>
+                <th class="text-center">Min</th>
+                <th class="text-center">Trạng thái</th>
+                <th class="text-center admin-only">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="products-table">
+              <tr><td colspan="10" class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm me-2"></div>Đang tải...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: NHẬP / XUẤT KHO                                       -->
+      <!-- ============================================================ -->
+      <div id="panel-transactions" class="tab-panel" style="display:none;">
+        <div class="row g-4">
+          <!-- Form tạo phiếu -->
+          <div class="col-lg-5 staff-only">
+            <div class="form-card">
+              <h5><i class="bi bi-clipboard-plus me-2"></i>Tạo phiếu Nhập/Xuất kho</h5>
+              <hr>
+              <form id="transaction-form" onsubmit="handleCreateTransaction(event)">
+                <div class="mb-3">
+                  <label class="form-label">Loại giao dịch <span class="text-danger">*</span></label>
+                  <select class="form-select" id="trans-type" required onchange="onTransTypeChange()">
+                    <option value="">-- Chọn loại --</option>
+                    <option value="Nhập">📥 Nhập kho</option>
+                    <option value="Xuất">📤 Xuất kho</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Sản phẩm <span class="text-danger">*</span></label>
+                  <select class="form-select" id="trans-product" required onchange="onTransProductChange()">
+                    <option value="">-- Chọn sản phẩm --</option>
+                  </select>
+                  <small class="text-muted" id="trans-stock-info"></small>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Số lượng <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="trans-quantity" min="1" required 
+                         placeholder="Nhập số lượng...">
+                </div>
+                <div class="mb-3" id="trans-supplier-group" style="display:none;">
+                  <label class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                  <select class="form-select" id="trans-supplier">
+                    <option value="">-- Chọn NCC --</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Ghi chú</label>
+                  <textarea class="form-control" id="trans-note" rows="2" placeholder="Ghi chú (tùy chọn)"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="trans-submit-btn">
+                  <i class="bi bi-check-lg me-1"></i>Tạo phiếu
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- Bảng lịch sử giao dịch -->
+          <div class="col-lg-7">
+            <div class="form-card">
+              <h5><i class="bi bi-clock-history me-2"></i>Lịch sử giao dịch gần đây</h5>
+              <hr>
+              <div class="table-responsive">
+                <table class="table table-hover table-sm table-custom">
+                  <thead>
+                    <tr>
+                      <th>Mã GD</th>
+                      <th>Sản phẩm</th>
+                      <th class="text-center">Loại</th>
+                      <th class="text-end">SL</th>
+                      <th>NCC</th>
+                      <th>Người tạo</th>
+                      <th>Ngày tạo</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transactions-table">
+                    <tr><td colspan="7" class="text-center text-muted py-4">
+                      <div class="spinner-border spinner-border-sm me-2"></div>Đang tải...
+                    </td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 4: CẢNH BÁO TỒN KHO                                     -->
+      <!-- ============================================================ -->
+      <div id="panel-alerts" class="tab-panel" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Cảnh báo tồn kho thấp</h4>
+          <button class="btn btn-danger admin-only" onclick="sendAlertEmails()">
+            <i class="bi bi-envelope-exclamation me-1"></i>Gửi cảnh báo ngay
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-custom">
+            <thead>
+              <tr>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th class="text-center">Tồn kho</th>
+                <th class="text-center">Min_Stock</th>
+                <th>Nhà cung cấp</th>
+                <th>SĐT NCC</th>
+              </tr>
+            </thead>
+            <tbody id="alerts-table">
+              <tr><td colspan="7" class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm me-2"></div>Đang tải...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 5: NHÀ CUNG CẤP (chỉ Admin)                             -->
+      <!-- ============================================================ -->
+      <div id="panel-suppliers" class="tab-panel" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4><i class="bi bi-people me-2"></i>Danh sách Nhà cung cấp</h4>
+          <button class="btn btn-primary" onclick="showSupplierModal()">
+            <i class="bi bi-plus-lg me-1"></i>Thêm NCC
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-custom">
+            <thead>
+              <tr>
+                <th>Mã NCC</th>
+                <th>Tên NCC</th>
+                <th>Người liên hệ</th>
+                <th>SĐT</th>
+                <th>Email</th>
+                <th>Địa chỉ</th>
+                <th class="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="suppliers-table">
+              <tr><td colspan="7" class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm me-2"></div>Đang tải...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 6: QUẢN LÝ USERS (chỉ Admin)                             -->
+      <!-- ============================================================ -->
+      <div id="panel-users" class="tab-panel" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4><i class="bi bi-shield-lock me-2"></i>Quản lý người dùng</h4>
+          <button class="btn btn-primary" onclick="showUserModal()">
+            <i class="bi bi-person-plus me-1"></i>Thêm User
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-custom">
+            <thead>
+              <tr>
+                <th>Mã User</th>
+                <th>Email</th>
+                <th>Họ tên</th>
+                <th class="text-center">Role</th>
+                <th class="text-center">Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="users-table">
+              <tr><td colspan="6" class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm me-2"></div>Đang tải...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- end container -->
+  </div><!-- end main-content -->
+
+  <!-- ============================================================ -->
+  <!-- MODAL: THÊM/SỬA SẢN PHẨM                                     -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalTitle">
+            <i class="bi bi-box-seam me-2"></i>Thêm sản phẩm
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="product-form" onsubmit="handleSaveProduct(event)">
+          <div class="modal-body">
+            <input type="hidden" id="prod-id">
+            <input type="hidden" id="prod-mode" value="add">
+            <div class="mb-3">
+              <label class="form-label">Mã sản phẩm</label>
+              <input type="text" class="form-control" id="prod-code" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="prod-name" required placeholder="Nhập tên SP...">
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                <select class="form-select" id="prod-category" required>
+                  <option value="">-- Chọn --</option>
+                </select>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">NCC <span class="text-danger">*</span></label>
+                <select class="form-select" id="prod-supplier" required>
+                  <option value="">-- Chọn --</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4 mb-3">
+                <label class="form-label">ĐVT <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="prod-unit" required placeholder="Cái, Cây, Ram...">
+              </div>
+              <div class="col-4 mb-3">
+                <label class="form-label">Đơn giá <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="prod-price" required min="0" placeholder="VNĐ">
+              </div>
+              <div class="col-4 mb-3">
+                <label class="form-label">Min Stock <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="prod-min" required min="0" placeholder="SL tối thiểu">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: THÊM/SỬA NHÀ CUNG CẤP                                 -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="supplierModalTitle">
+            <i class="bi bi-people me-2"></i>Thêm nhà cung cấp
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="supplier-form" onsubmit="handleSaveSupplier(event)">
+          <div class="modal-body">
+            <input type="hidden" id="sup-id">
+            <input type="hidden" id="sup-mode" value="add">
+            <div class="mb-3">
+              <label class="form-label">Mã NCC</label>
+              <input type="text" class="form-control" id="sup-code" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="sup-name" required placeholder="Nhập tên NCC...">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Người liên hệ <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="sup-contact" required placeholder="Họ tên...">
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control" id="sup-phone" required placeholder="09xxxxxxxx">
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="sup-email" placeholder="email@company.com">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Địa chỉ</label>
+              <input type="text" class="form-control" id="sup-address" placeholder="Địa chỉ...">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: THÊM/SỬA USER                                          -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalTitle">
+            <i class="bi bi-person-plus me-2"></i>Thêm người dùng
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="user-form" onsubmit="handleSaveUser(event)">
+          <div class="modal-body">
+            <input type="hidden" id="user-id">
+            <input type="hidden" id="user-mode" value="add">
+            <div class="mb-3">
+              <label class="form-label">Email <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="user-email" required placeholder="email@gmail.com">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mật khẩu <span class="text-danger" id="pw-required">*</span></label>
+              <input type="text" class="form-control" id="user-password" placeholder="Mật khẩu (mặc định: 123456)">
+              <small class="text-muted" id="pw-hint">Để trống nếu không muốn thay đổi (khi sửa)</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Họ tên <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="user-fullname" required placeholder="Họ và tên...">
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Role <span class="text-danger">*</span></label>
+                <select class="form-select" id="user-role" required>
+                  <option value="admin">Admin</option>
+                  <option value="warehouse_staff">Nhân viên kho</option>
+                  <option value="viewer">Người xem</option>
+                </select>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="user-active">
+                  <option value="true">✅ Active</option>
+                  <option value="false">❌ Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL XÁC NHẬN XÓA                                            -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message">Bạn có chắc chắn muốn xóa?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-danger btn-sm" id="confirm-btn" onclick="">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript (Server-side Include) -->
+  <?!= include('JavaScript'); ?>
+
+</body>
+</html>
