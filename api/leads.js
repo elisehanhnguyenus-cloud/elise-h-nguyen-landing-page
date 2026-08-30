@@ -22,6 +22,9 @@ export default async function handler(req, res) {
          console.warn("BLOB_READ_WRITE_TOKEN is missing. Skipping file upload.");
       } else {
          const fileBuffer = Buffer.from(attachment.data, 'base64');
+         if (fileBuffer.length > 4 * 1024 * 1024) {
+           return res.status(413).json({ success: false, message: 'File vượt quá 4MB' });
+         }
          const blob = await put(`leads/${Date.now()}_${attachment.name}`, fileBuffer, {
             access: 'public',
             contentType: attachment.contentType || 'application/octet-stream',

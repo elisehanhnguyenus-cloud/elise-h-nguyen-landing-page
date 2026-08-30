@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ĐỔI KHI CÓ DOMAIN: thay web1-chi-one.vercel.app bằng domain mới -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://web1-chi-one.vercel.app/</loc><priority>1.0</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/work/emperor-cruises</loc><priority>0.8</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/work/lux-cruises-group</loc><priority>0.8</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/work/diamond-bay-resort</loc><priority>0.8</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/work/lazada</loc><priority>0.8</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/work/selly</loc><priority>0.8</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/blog/</loc><priority>0.7</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/blog/tough-love-marketing</loc><priority>0.7</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/blog/cau-chuyen-khoi-nghiep</loc><priority>0.7</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/blog/goc-nhin-van-hoa</loc><priority>0.7</priority></url>
+  <url><loc>https://web1-chi-one.vercel.app/privacy</loc><priority>0.3</priority></url>
+</urlset>

@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  [hidden] { display: none !important; }
+  body { @apply bg-paper text-ink font-sans antialiased; }
+  ::selection { background-color: #B5502E; color: #FBF8F2; }
+}
+
+@layer components {
+  /* Nhãn nhỏ viết hoa — dùng tiết chế */
+  .kicker { @apply font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-clay; }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-clay text-paper px-8 py-4 rounded-md
+           font-sans text-sm font-semibold tracking-wide transition-colors hover:bg-clay-deep;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 font-sans text-sm font-medium text-ink/70
+           hover:text-clay transition-colors;
+  }
+
+  .nav-link { @apply font-sans text-sm text-ink/70 hover:text-clay transition-colors; }
+
+  /* Ô đánh dấu nội dung chị cần điền */
+  .fill {
+    @apply bg-amber-100 text-amber-900 rounded px-1.5 py-0.5 text-[0.95em];
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .prose-body p { @apply text-[17px] leading-8 text-ink/80 mb-6; }
+  .prose-body h2 { @apply font-serif text-3xl mt-12 mb-5; }
+  .prose-body ul { @apply space-y-3 mb-6 text-[17px] leading-7 text-ink/80 list-disc pl-6; }
+  .prose-body blockquote { @apply border-l-2 border-clay pl-6 my-10 font-serif text-2xl italic leading-relaxed text-ink; }
+}
+
+/* Inline SVG icons */
+.ic { width: 1.1em; height: 1.1em; display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }
+
+/* Chatbot */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+@keyframes typingPulse { 0%, 100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.1); } }
+.typing-dot { animation: typingPulse .8s infinite; display: inline-block; width: 4px; height: 4px; background: #B5502E; border-radius: 50%; margin: 0 1.5px; }
+.bubble-in { animation: bubbleIn .35s cubic-bezier(.175,.885,.32,1.275) forwards; }
+@keyframes bubbleIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.service-folder summary::-webkit-details-marker { display: none; }
