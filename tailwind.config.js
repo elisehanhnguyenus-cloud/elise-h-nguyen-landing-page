@@ -20,7 +20,7 @@ export default {
       fontFamily: {
         serif: ['"Playfair Display"', 'Georgia', 'serif'],
         sans: ['"Be Vietnam Pro"', 'system-ui', 'sans-serif'],
-        script: ['"Dancing Script"', 'cursive'],
+        script: ['"Great Vibes"', 'cursive'],
       },
       maxWidth: { site: '72rem' },
     },

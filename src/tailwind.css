@@ -5,17 +5,19 @@
 @layer base {
   html { scroll-behavior: smooth; }
   [hidden] { display: none !important; }
-  body { @apply bg-paper text-ink font-sans antialiased; }
+  /* Thân bài dùng Lora (serif ấm, đầy đủ tiếng Việt) — chất tạp chí, không "cứng" */
+  body { @apply bg-paper text-ink antialiased; font-family: 'Lora', Georgia, serif; }
+  input, select, textarea, button { font-family: 'Be Vietnam Pro', system-ui, sans-serif; }
   ::selection { background-color: #B5502E; color: #FBF8F2; }
 }
 
 @layer components {
   /* Nhãn nhỏ viết hoa — dùng tiết chế */
-  .kicker { @apply font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-clay; }
+  .kicker { @apply font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-clay; }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-clay text-paper px-8 py-4 rounded-md
-           font-sans text-sm font-semibold tracking-wide transition-colors hover:bg-clay-deep;
+    @apply inline-flex items-center justify-center gap-2 bg-clay text-paper px-8 py-3.5 rounded-md
+           font-sans text-sm font-medium tracking-wide transition-colors hover:bg-clay-deep;
   }
   .btn-ghost {
     @apply inline-flex items-center gap-2 font-sans text-sm font-medium text-ink/70
@@ -39,6 +41,27 @@
 
 /* Inline SVG icons */
 .ic { width: 1.1em; height: 1.1em; display: inline-block; vertical-align: -0.15em; flex-shrink: 0; }
+
+/* ============================================================
+   BREATHING TEXT — cảm hứng từ fancycomponents.dev/breathing-text
+   Bản CSS thuần: chữ serif "thở" bằng trục weight của variable font
+   (Playfair Display), chữ ký script "thở" bằng scale rất nhẹ.
+   ============================================================ */
+@keyframes breathe-wght {
+  0%, 100% { font-variation-settings: 'wght' 450; }
+  50%      { font-variation-settings: 'wght' 800; }
+}
+.breathe { animation: breathe-wght 5s ease-in-out infinite; }
+
+@keyframes breathe-soft {
+  0%, 100% { transform: scale(1); opacity: .92; }
+  50%      { transform: scale(1.03); opacity: 1; }
+}
+.breathe-script { display: inline-block; transform-origin: center; animation: breathe-soft 5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe, .breathe-script { animation: none; }
+}
 
 /* Chatbot */
 .no-scrollbar::-webkit-scrollbar { display: none; }

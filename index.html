@@ -22,9 +22,10 @@
 <link rel="icon" type="image/png" href="/favicon.png"/>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
+<!-- Font self-host (vietnamese + latin) — không phụ thuộc Google Fonts -->
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/great-vibes-normal-400-vietnamese.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/great-vibes-normal-400-latin.woff2" crossorigin/>
+<link rel="stylesheet" href="/assets/css/fonts.css"/>
 <link rel="stylesheet" href="/assets/css/styles.css"/>
 <link rel="preload" as="image" href="/assets/images/opt/elise_hero_main.webp" type="image/webp"/>
 
@@ -64,7 +65,7 @@
       <a class="nav-link" href="/#portfolio">Case study</a>
       <a class="nav-link" href="/#books">Sách</a>
       <a class="nav-link" href="/#blog">Tạp chí</a>
-      <a class="btn-primary !px-5 !py-2.5 text-xs" href="/#contact">Liên hệ</a>
+      <a class="btn-primary !px-5 !py-2 text-xs" href="/#contact">Liên hệ</a>
     </nav>
     <button id="menu-toggle" class="md:hidden p-2 -mr-2 text-ink" aria-label="Mở menu" aria-expanded="false">
       <svg id="icon-menu" class="ic text-2xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -84,273 +85,226 @@
 <main>
 
 <!-- ===== HERO ===== -->
-<section class="pt-28 lg:pt-36 pb-16 lg:pb-20 bg-paper">
+<section class="pt-28 lg:pt-32 pb-12 lg:pb-16">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+    <div class="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
       <div class="lg:col-span-7 order-2 lg:order-1">
-        <p class="kicker mb-5">Chiến lược thương hiệu · Copywriting · AI</p>
-        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight">Elise Hạnh Nguyễn</h1>
-        <p class="font-script text-4xl sm:text-5xl lg:text-6xl text-clay leading-tight mt-2 mb-6">Nữ Quân Sư</p>
-        <p class="font-sans text-sm font-medium text-stone uppercase tracking-[0.14em] border-l-2 border-clay/40 pl-4 mb-8">Copywriter · Journalist · Author · Solopreneur</p>
-        <p class="text-lg lg:text-xl text-ink/75 leading-relaxed max-w-xl mb-3">“Raw truth, Real craft. Built to last.”</p>
-        <p class="font-serif italic text-clay mb-10">Đan sự thật, dệt giá trị, kiến tạo bản sắc.</p>
+        <p class="kicker mb-6">Chiến lược thương hiệu · Copywriting · AI</p>
+        <h1 class="font-script text-6xl sm:text-7xl lg:text-8xl text-clay leading-[1.15] -ml-1">Elise Hạnh Nguyễn</h1>
+        <p class="font-serif italic text-3xl sm:text-4xl lg:text-5xl text-ink mt-1 mb-7">— Nữ Quân Sư</p>
+        <p class="font-sans text-xs font-medium text-stone uppercase tracking-[0.14em] mb-8">Copywriter · Journalist · Author · Solopreneur</p>
+        <p class="font-serif text-xl lg:text-2xl text-ink/85 leading-relaxed max-w-xl mb-2">“Raw truth, <em class="breathe">Real craft</em>.<br class="sm:hidden"/> Built to last.”</p>
+        <p class="italic text-stone mb-9">Đan sự thật, dệt giá trị, kiến tạo bản sắc.</p>
         <div class="flex flex-wrap items-center gap-6">
           <a class="btn-primary" href="/#contact">Nhận giải pháp</a>
           <a class="btn-ghost" href="/#portfolio">Xem case study <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
         </div>
       </div>
       <div class="lg:col-span-5 order-1 lg:order-2">
-        <figure class="relative max-w-sm mx-auto lg:max-w-none">
-          <div class="aspect-[4/5] overflow-hidden rounded-lg border border-line shadow-lg">
+        <figure class="relative max-w-xs sm:max-w-sm mx-auto lg:max-w-none">
+          <div class="aspect-[4/5] overflow-hidden rounded-lg border border-line shadow-lg rotate-1">
             <picture>
               <source srcset="/assets/images/opt/elise_hero_main.webp" type="image/webp"/>
               <img src="/assets/images/opt/elise_hero_main.jpg" alt="Chân dung Elise Hạnh Nguyễn" class="w-full h-full object-cover" width="1100" height="1375" fetchpriority="high"/>
             </picture>
           </div>
-          <div class="absolute -bottom-4 -left-4 h-24 w-24 border-b border-l border-clay/30 rounded-bl-2xl -z-10" aria-hidden="true"></div>
+          <div class="absolute -bottom-4 -left-4 h-20 w-20 border-b border-l border-clay/30 rounded-bl-2xl -z-10" aria-hidden="true"></div>
         </figure>
       </div>
     </div>
 
-    <!-- Dải số liệu uy tín -->
-    <dl class="mt-16 lg:mt-24 grid grid-cols-2 md:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
-      <div class="bg-paper p-6 text-center flex flex-col"><dt class="order-2 text-xs text-stone mt-2 block">năm kinh nghiệm truyền thông</dt><dd class="font-serif text-3xl lg:text-4xl font-semibold">15+</dd></div>
-      <div class="bg-paper p-6 text-center flex flex-col"><dt class="order-2 text-xs text-stone mt-2 block">thương hiệu đồng hành</dt><dd class="font-serif text-3xl lg:text-4xl font-semibold">14+</dd></div>
-      <div class="bg-paper p-6 text-center flex flex-col"><dt class="order-2 text-xs text-stone mt-2 block">đầu sách đang hoàn thiện</dt><dd class="font-serif text-3xl lg:text-4xl font-semibold">04</dd></div>
-      <div class="bg-paper p-6 text-center flex flex-col"><dt class="order-2 text-xs text-stone mt-2 block">thị trường Việt Nam – Hoa Kỳ</dt><dd class="font-serif text-3xl lg:text-4xl font-semibold">02</dd></div>
-    </dl>
+    <!-- Dòng số liệu -->
+    <p class="mt-12 lg:mt-16 pt-8 border-t border-line flex flex-wrap justify-center gap-x-10 gap-y-3 text-center text-sm text-stone">
+      <span><strong class="font-serif text-2xl text-ink font-semibold">15+</strong> năm làm nghề</span>
+      <span><strong class="font-serif text-2xl text-ink font-semibold">14+</strong> thương hiệu đồng hành</span>
+      <span><strong class="font-serif text-2xl text-ink font-semibold">04</strong> đầu sách đang viết</span>
+      <span><strong class="font-serif text-2xl text-ink font-semibold">02</strong> thị trường Việt&nbsp;Nam — Hoa&nbsp;Kỳ</span>
+    </p>
   </div>
 </section>
 
 <!-- ===== ABOUT ===== -->
-<section class="py-24 lg:py-32 bg-cream" id="about">
+<section class="py-16 lg:py-24 bg-cream" id="about">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-      <div class="lg:col-span-5 lg:sticky lg:top-28">
+    <div class="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+      <div class="lg:col-span-7">
         <p class="kicker mb-4">Về Elise</p>
-        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-8">Triết lý <em class="text-clay not-italic font-serif italic">Tough Love</em></h2>
-        <div class="space-y-5 text-ink/75 leading-relaxed text-lg">
-          <p>Với hơn 15 năm kinh nghiệm trong ngành truyền thông và chiến lược, tôi không chỉ tìm kiếm hay xây dựng giải pháp. Tôi tin vào giá trị của sự thật (Raw Truth) và sự tỉ mỉ trong từng đường nét thủ công (Real Craft).</p>
-          <p>Hành trình của tôi là sự giao thoa giữa tư duy sắc bén của một nhà báo, tầm nhìn của một chuyên gia Marcom và sự nhạy bén của một doanh nhân trong kỷ nguyên AI. Tôi mang đến sự kết hợp độc đáo giữa chiều sâu văn hóa Á Đông và tư duy kinh doanh toàn cầu.</p>
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-7">Triết lý <em class="text-clay">Tough Love</em></h2>
+        <div class="space-y-5 text-ink/80 leading-8 text-[17px] max-w-2xl">
+          <p>Với hơn 15 năm trong ngành truyền thông và chiến lược, tôi không chỉ tìm kiếm hay xây dựng giải pháp. Tôi tin vào giá trị của sự thật <em>(Raw Truth)</em> và sự tỉ mỉ trong từng đường nét thủ công <em>(Real Craft)</em>.</p>
+          <p>Hành trình của tôi là sự giao thoa giữa tư duy sắc bén của một nhà báo, tầm nhìn của một chuyên gia Marcom và sự nhạy bén của một doanh nhân trong kỷ nguyên AI — chiều sâu văn hóa Á Đông đan cùng tư duy kinh doanh toàn cầu.</p>
         </div>
-        <ul class="flex flex-wrap gap-2.5 mt-9" aria-label="Lĩnh vực chuyên môn">
-          <li class="px-4 py-1.5 rounded-full border border-bronze/40 text-xs font-medium text-bronze">Copywriting</li>
-          <li class="px-4 py-1.5 rounded-full border border-bronze/40 text-xs font-medium text-bronze">Journalism</li>
-          <li class="px-4 py-1.5 rounded-full border border-bronze/40 text-xs font-medium text-bronze">Marcom & PR</li>
-          <li class="px-4 py-1.5 rounded-full border border-bronze/40 text-xs font-medium text-bronze">AI Trainer</li>
+        <p class="font-script text-4xl text-clay/80 mt-8">Mộc &amp; Thật</p>
+        <ul class="flex flex-wrap gap-2.5 mt-6" aria-label="Lĩnh vực chuyên môn">
+          <li class="px-4 py-1 rounded-full border border-bronze/40 font-sans text-xs text-bronze">Copywriting</li>
+          <li class="px-4 py-1 rounded-full border border-bronze/40 font-sans text-xs text-bronze">Journalism</li>
+          <li class="px-4 py-1 rounded-full border border-bronze/40 font-sans text-xs text-bronze">Marcom &amp; PR</li>
+          <li class="px-4 py-1 rounded-full border border-bronze/40 font-sans text-xs text-bronze">AI Trainer</li>
         </ul>
       </div>
-      <div class="lg:col-span-7">
-        <div class="grid sm:grid-cols-2 gap-6 lg:gap-8">
-          <div class="space-y-6 lg:space-y-8">
-            <figure class="aspect-[3/4] rounded-lg overflow-hidden border border-line">
-              <picture>
-                <source srcset="/assets/images/opt/elise_about_1.webp" type="image/webp"/>
-                <img src="/assets/images/opt/elise_about_1.jpg" alt="Elise Hạnh Nguyễn trong công việc" class="w-full h-full object-cover" width="800" height="1067" loading="lazy"/>
-              </picture>
-            </figure>
-            <div class="p-7 bg-paper rounded-lg border border-line">
-              <h3 class="font-serif text-2xl mb-3 text-clay">Nữ Quân Sư</h3>
-              <p class="text-sm text-ink/70 leading-relaxed">Không chỉ là tư vấn, tôi đồng hành để khai phóng bản sắc thực sự của thương hiệu.</p>
-            </div>
+      <div class="lg:col-span-5">
+        <figure class="relative max-w-xs mx-auto lg:max-w-sm">
+          <div class="aspect-[3/4] rounded-lg overflow-hidden border border-line -rotate-1">
+            <picture>
+              <source srcset="/assets/images/opt/elise_about_1.webp" type="image/webp"/>
+              <img src="/assets/images/opt/elise_about_1.jpg" alt="Elise Hạnh Nguyễn trong công việc" class="w-full h-full object-cover" width="800" height="1067" loading="lazy"/>
+            </picture>
           </div>
-          <div class="space-y-6 lg:space-y-8 sm:pt-12">
-            <div class="p-7 bg-paper rounded-lg border border-line">
-              <h3 class="font-serif text-2xl mb-3 text-bronze">Mộc &amp; Thật</h3>
-              <p class="text-sm text-ink/70 leading-relaxed">Vẻ đẹp bền vững đến từ sự chân thành và những giá trị cốt lõi không thể sao chép.</p>
-            </div>
-            <figure class="aspect-[3/4] rounded-lg overflow-hidden border border-line">
-              <picture>
-                <source srcset="/assets/images/opt/elise_about_2.webp" type="image/webp"/>
-                <img src="/assets/images/opt/elise_about_2.jpg" alt="Góc làm việc thủ công của Elise" class="w-full h-full object-cover" width="800" height="1067" loading="lazy"/>
-              </picture>
-            </figure>
-          </div>
-        </div>
+          <figcaption class="absolute -bottom-5 right-0 bg-paper border border-line rounded-md px-5 py-3 shadow-sm rotate-1">
+            <span class="font-script text-2xl text-clay">Nữ Quân Sư</span>
+          </figcaption>
+        </figure>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== EXPERTISE ===== -->
-<section class="py-24 lg:py-32 bg-paper" id="services">
+<section class="py-16 lg:py-24" id="services">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="max-w-2xl mb-16">
+    <div class="max-w-2xl mb-12">
       <p class="kicker mb-4">Chuyên môn</p>
       <h2 class="font-serif text-4xl lg:text-5xl leading-tight">Ba trụ cột tôi đứng cùng thương hiệu của bạn</h2>
     </div>
-    <div class="grid md:grid-cols-3 gap-px bg-line border border-line rounded-lg overflow-hidden">
-      <article class="bg-paper p-10 hover:bg-cream transition-colors">
-        <p class="font-serif text-sm text-stone mb-8">01</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4">Copywriting<br/>&amp; Content</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">The Writer — chắt lọc ngôn từ để kể những câu chuyện chạm đến tâm hồn, xây dựng lòng tin qua sự thành thực.</p>
-        <ul class="space-y-2 text-sm text-stone">
-          <li>Brand Voice</li>
-          <li>Narrative Strategy</li>
-          <li>Editorial Content</li>
-        </ul>
+    <div class="grid md:grid-cols-3 gap-x-12 gap-y-10">
+      <article class="border-t border-line pt-7">
+        <p class="font-script text-4xl text-clay/60 mb-4">một</p>
+        <h3 class="font-serif text-2xl leading-snug mb-3">Copywriting &amp; Content</h3>
+        <p class="text-ink/75 leading-7 mb-4"><em>The Writer</em> — chắt lọc ngôn từ để kể những câu chuyện chạm đến tâm hồn, xây dựng lòng tin qua sự thành thực.</p>
+        <p class="font-sans text-xs text-stone">Brand Voice · Narrative Strategy · Editorial</p>
       </article>
-      <article class="bg-paper p-10 hover:bg-cream transition-colors">
-        <p class="font-serif text-sm text-stone mb-8">02</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4">Marcom<br/>&amp; PR Strategy</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">The Strategist — kiến tạo lộ trình truyền thông bền vững, định vị bản sắc trong lòng công chúng mục tiêu.</p>
-        <ul class="space-y-2 text-sm text-stone">
-          <li>Crisis Management</li>
-          <li>Global Branding</li>
-          <li>PR Outreach</li>
-        </ul>
+      <article class="border-t border-line pt-7">
+        <p class="font-script text-4xl text-clay/60 mb-4">hai</p>
+        <h3 class="font-serif text-2xl leading-snug mb-3">Marcom &amp; PR Strategy</h3>
+        <p class="text-ink/75 leading-7 mb-4"><em>The Strategist</em> — kiến tạo lộ trình truyền thông bền vững, định vị bản sắc trong lòng công chúng mục tiêu.</p>
+        <p class="font-sans text-xs text-stone">Crisis Management · Global Branding · PR</p>
       </article>
-      <article class="bg-paper p-10 hover:bg-cream transition-colors">
-        <p class="font-serif text-sm text-stone mb-8">03</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4">AI &amp; Cross-border<br/>Business</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">The Solopreneur — tối ưu vận hành bằng AI và mở rộng biên giới kinh doanh trên các nền tảng toàn cầu.</p>
-        <ul class="space-y-2 text-sm text-stone">
-          <li>AI Integration</li>
-          <li>Global E-commerce</li>
-          <li>Digital Transformation</li>
-        </ul>
+      <article class="border-t border-line pt-7">
+        <p class="font-script text-4xl text-clay/60 mb-4">ba</p>
+        <h3 class="font-serif text-2xl leading-snug mb-3">AI &amp; Cross-border Business</h3>
+        <p class="text-ink/75 leading-7 mb-4"><em>The Solopreneur</em> — tối ưu vận hành bằng AI và mở rộng biên giới kinh doanh trên các nền tảng toàn cầu.</p>
+        <p class="font-sans text-xs text-stone">AI Integration · Global E-commerce</p>
       </article>
     </div>
   </div>
 </section>
 
 <!-- ===== QUOTE ===== -->
-<section class="py-24 lg:py-32 bg-espresso text-paper/90">
+<section class="py-16 lg:py-24 bg-espresso text-paper/90">
   <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-    <blockquote class="font-serif text-3xl md:text-4xl lg:text-[2.75rem] leading-snug">
-      “Trong một thế giới ồn ào, sự <em class="text-clay" style="color:#E0906F">chân thật</em> là vũ khí tối thượng của một thương hiệu bền vững.”
+    <blockquote class="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed">
+      “Trong một thế giới ồn ào, sự <span class="font-script not-italic text-[1.5em] leading-none breathe-script" style="color:#E8A98C">chân thật</span> là vũ khí tối thượng của một <em class="breathe">thương hiệu bền vững</em>.”
     </blockquote>
-    <cite class="not-italic block mt-10 text-sm tracking-[0.25em] uppercase text-paper/50">Elise Hạnh Nguyễn</cite>
+    <cite class="not-italic block mt-9"><span class="font-script text-3xl text-paper/70">Elise Hạnh Nguyễn</span></cite>
   </div>
 </section>
 
-<!-- ===== CASE STUDIES ===== -->
-<section class="py-24 lg:py-32 bg-paper" id="portfolio">
+<!-- ===== CASE STUDIES — mục lục tạp chí ===== -->
+<section class="py-16 lg:py-24" id="portfolio">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-      <div class="max-w-2xl">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+      <div>
         <p class="kicker mb-4">Case study</p>
-        <h2 class="font-serif text-4xl lg:text-5xl leading-tight">Những dự án được xây bằng tâm thế thủ công</h2>
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight">Những dự án được xây<br/>bằng tâm thế <em class="text-clay">thủ công</em></h2>
       </div>
-      <p class="text-stone text-sm max-w-xs">Hospitality cao cấp và thương mại điện tử — hai địa hạt tôi hiểu bằng cả trải nghiệm làm nghề.</p>
+      <p class="italic text-stone max-w-xs text-[15px]">Hospitality cao cấp và thương mại điện tử — hai địa hạt tôi hiểu bằng trải nghiệm làm nghề.</p>
     </div>
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      <!-- Emperor Cruises -->
-      <a href="/work/emperor-cruises" class="group block">
-        <div class="aspect-[16/10] rounded-lg overflow-hidden bg-pine relative border border-line">
-          <div class="absolute inset-0 flex flex-col justify-between p-7">
-            <span class="text-paper/60 text-[11px] uppercase tracking-[0.22em]">Hospitality · Luxury Cruise</span>
-            <span class="font-serif text-paper text-3xl leading-tight">Emperor Cruises<br/><span class="text-paper/70 text-xl italic">Nha Trang</span></span>
-          </div>
-          <div class="absolute inset-3 border border-paper/15 rounded pointer-events-none" aria-hidden="true"></div>
+    <div class="border-t border-line">
+      <a href="/work/emperor-cruises" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="font-serif italic text-stone/60 w-7 shrink-0">01</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Emperor Cruises <span class="italic text-stone font-normal">— Nha Trang</span></h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Kể chuyện di sản trên vịnh Nha Trang</p>
         </div>
-        <h3 class="font-serif text-xl mt-5 mb-1 group-hover:text-clay transition-colors">Kể chuyện di sản trên vịnh Nha Trang</h3>
-        <p class="text-sm text-stone">Brand Storytelling · PR</p>
+        <span class="hidden md:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Hospitality · PR</span>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <!-- Lux Cruises Group -->
-      <a href="/work/lux-cruises-group" class="group block">
-        <div class="aspect-[16/10] rounded-lg overflow-hidden bg-espresso relative border border-line">
-          <div class="absolute inset-0 flex flex-col justify-between p-7">
-            <span class="text-paper/60 text-[11px] uppercase tracking-[0.22em]">Hospitality · Group Brand</span>
-            <span class="font-serif text-paper text-3xl leading-tight">Lux Cruises<br/><span class="text-paper/70 text-xl italic">Group</span></span>
-          </div>
-          <div class="absolute inset-3 border border-paper/15 rounded pointer-events-none" aria-hidden="true"></div>
+      <a href="/work/lux-cruises-group" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="font-serif italic text-stone/60 w-7 shrink-0">02</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Lux Cruises Group</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Chiến lược thương hiệu tập đoàn du thuyền</p>
         </div>
-        <h3 class="font-serif text-xl mt-5 mb-1 group-hover:text-clay transition-colors">Chiến lược thương hiệu tập đoàn du thuyền</h3>
-        <p class="text-sm text-stone">Brand Strategy · Marcom</p>
+        <span class="hidden md:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Hospitality · Strategy</span>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <!-- Diamond Bay -->
-      <a href="/work/diamond-bay-resort" class="group block">
-        <div class="aspect-[16/10] rounded-lg overflow-hidden bg-bronze relative border border-line">
-          <div class="absolute inset-0 flex flex-col justify-between p-7">
-            <span class="text-paper/70 text-[11px] uppercase tracking-[0.22em]">Hospitality · Resort</span>
-            <span class="font-serif text-paper text-3xl leading-tight">Diamond Bay<br/><span class="text-paper/80 text-xl italic">Resort &amp; Spa</span></span>
-          </div>
-          <div class="absolute inset-3 border border-paper/15 rounded pointer-events-none" aria-hidden="true"></div>
+      <a href="/work/diamond-bay-resort" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="font-serif italic text-stone/60 w-7 shrink-0">03</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Diamond Bay <span class="italic text-stone font-normal">Resort &amp; Spa</span></h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Truyền thông điểm đến nghỉ dưỡng</p>
         </div>
-        <h3 class="font-serif text-xl mt-5 mb-1 group-hover:text-clay transition-colors">Truyền thông điểm đến nghỉ dưỡng</h3>
-        <p class="text-sm text-stone">PR · Content</p>
+        <span class="hidden md:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Hospitality · Content</span>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <!-- Lazada -->
-      <a href="/work/lazada" class="group block">
-        <div class="aspect-[16/10] rounded-lg overflow-hidden bg-indigo2 relative border border-line">
-          <div class="absolute inset-0 flex flex-col justify-between p-7">
-            <span class="text-paper/60 text-[11px] uppercase tracking-[0.22em]">E-commerce · Platform</span>
-            <span class="font-serif text-paper text-3xl leading-tight">Lazada</span>
-          </div>
-          <div class="absolute inset-3 border border-paper/15 rounded pointer-events-none" aria-hidden="true"></div>
+      <a href="/work/lazada" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="font-serif italic text-stone/60 w-7 shrink-0">04</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Lazada</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Nội dung thương mại ở quy mô nền tảng</p>
         </div>
-        <h3 class="font-serif text-xl mt-5 mb-1 group-hover:text-clay transition-colors">Nội dung thương mại ở quy mô nền tảng</h3>
-        <p class="text-sm text-stone">Content · Campaign</p>
+        <span class="hidden md:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">E-commerce · Campaign</span>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <!-- Selly -->
-      <a href="/work/selly" class="group block">
-        <div class="aspect-[16/10] rounded-lg overflow-hidden bg-clay-deep relative border border-line">
-          <div class="absolute inset-0 flex flex-col justify-between p-7">
-            <span class="text-paper/60 text-[11px] uppercase tracking-[0.22em]">E-commerce · Social Commerce</span>
-            <span class="font-serif text-paper text-3xl leading-tight">Selly.vn</span>
-          </div>
-          <div class="absolute inset-3 border border-paper/15 rounded pointer-events-none" aria-hidden="true"></div>
+      <a href="/work/selly" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="font-serif italic text-stone/60 w-7 shrink-0">05</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Selly.vn</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Tăng trưởng bằng cộng đồng bán hàng</p>
         </div>
-        <h3 class="font-serif text-xl mt-5 mb-1 group-hover:text-clay transition-colors">Tăng trưởng bằng cộng đồng bán hàng</h3>
-        <p class="text-sm text-stone">Growth Content · Social Commerce</p>
-      </a>
-      <!-- CTA card -->
-      <a href="/#contact" class="group flex flex-col justify-center items-start p-8 rounded-lg border border-dashed border-clay/40 hover:border-clay transition-colors">
-        <p class="font-serif text-2xl leading-snug mb-3">Dự án tiếp theo<br/>có thể là của bạn.</p>
-        <span class="btn-ghost text-clay">Bắt đầu cuộc trò chuyện <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+        <span class="hidden md:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Social Commerce</span>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
     </div>
+    <p class="mt-8 italic text-stone">Dự án tiếp theo có thể là của bạn — <a href="/#contact" class="text-clay underline underline-offset-4 hover:text-clay-deep">bắt đầu cuộc trò chuyện</a>.</p>
   </div>
 </section>
 
 <!-- ===== BOOKS ===== -->
-<section class="py-24 lg:py-32 bg-cream" id="books">
+<section class="py-16 lg:py-24 bg-cream" id="books">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-      <div>
+    <div class="grid lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+      <div class="lg:col-span-5">
         <p class="kicker mb-4">Author</p>
-        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-6">Sách — sự giao thoa của những con số &amp; nghệ thuật</h2>
-        <p class="text-ink/75 text-lg leading-relaxed mb-10">Trong vai trò một tác giả, tôi mượn sự tĩnh lặng để đào sâu vào tận cùng của những chủ đề đa dạng. Mỗi cuốn sách là sự khai phá bản ngã — từ văn hóa lịch sử, khoa học viễn tưởng đến những chân lý trần trụi của kinh doanh.</p>
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-6">Sách — nơi con số gặp <em class="text-clay">nghệ thuật</em></h2>
+        <p class="text-ink/80 leading-8 text-[17px] mb-8">Trong vai trò một tác giả, tôi mượn sự tĩnh lặng để đào sâu vào tận cùng của những chủ đề đa dạng — từ văn hóa lịch sử, khoa học viễn tưởng đến những chân lý trần trụi của kinh doanh.</p>
         <!-- Sách nổi bật -->
-        <div class="max-w-sm bg-paper border border-line rounded-lg p-10 shadow-sm">
-          <p class="kicker mb-5">Sắp ra mắt</p>
-          <p class="font-script text-5xl leading-tight mb-3">Người<br/>Thêu Dệt</p>
-          <p class="text-sm text-ink/70 italic mb-8">“Tuyển tập chân lý trần trụi về nghề chắp bút và xây dựng thương hiệu.”</p>
-          <p class="text-xs text-stone uppercase tracking-[0.18em]">Tập chuyên khảo · Elise H. Nguyễn</p>
+        <div class="max-w-xs bg-paper border border-line rounded-lg p-8 shadow-sm -rotate-1">
+          <p class="kicker mb-4">Sắp ra mắt</p>
+          <p class="font-script text-5xl text-ink leading-snug mb-3">Người Thêu Dệt</p>
+          <p class="text-sm text-ink/70 italic">“Tuyển tập chân lý trần trụi về nghề chắp bút và xây dựng thương hiệu.”</p>
         </div>
       </div>
-      <div class="lg:pt-10">
-        <h3 class="font-serif text-2xl mb-8">Tuyển tập sắp xuất bản</h3>
-        <ul class="space-y-5">
-          <li class="p-6 bg-paper border border-line rounded-lg">
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1.5">
-              <h4 class="font-serif text-xl">Bí Mật Hoa Hồng</h4>
-              <span class="text-[11px] uppercase tracking-wider text-stone">Truyện ngắn</span>
+      <div class="lg:col-span-7 lg:pt-8">
+        <ul class="border-t border-line">
+          <li class="flex items-baseline justify-between gap-6 py-5 border-b border-line">
+            <div>
+              <h3 class="font-serif text-xl">Bí Mật Hoa Hồng</h3>
+              <p class="italic text-stone text-[15px] mt-0.5">Tuyển tập chữa lành cho trẻ em &amp; người lớn</p>
             </div>
-            <p class="text-sm text-ink/70">Tuyển tập chân thành, chữa lành và sâu lắng dành cho trẻ em &amp; người lớn.</p>
+            <span class="font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Truyện ngắn</span>
           </li>
-          <li class="p-6 bg-paper border border-line rounded-lg">
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1.5">
-              <h4 class="font-serif text-xl">Delta VI</h4>
-              <span class="text-[11px] uppercase tracking-wider text-stone">Sci-Fi · KDP</span>
+          <li class="flex items-baseline justify-between gap-6 py-5 border-b border-line">
+            <div>
+              <h3 class="font-serif text-xl">Delta VI</h3>
+              <p class="italic text-stone text-[15px] mt-0.5">Vũ trụ và những giới hạn của nhân loại</p>
             </div>
-            <p class="text-sm text-ink/70">Hành trình khoa học viễn tưởng khám phá vũ trụ và những giới hạn của nhân loại.</p>
+            <span class="font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Sci-Fi · KDP</span>
           </li>
-          <li class="p-6 bg-paper border border-line rounded-lg">
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1.5">
-              <h4 class="font-serif text-xl">Quan Gia</h4>
-              <span class="text-[11px] uppercase tracking-wider text-stone">Tiểu thuyết lịch sử</span>
+          <li class="flex items-baseline justify-between gap-6 py-5 border-b border-line">
+            <div>
+              <h3 class="font-serif text-xl">Quan Gia</h3>
+              <p class="italic text-stone text-[15px] mt-0.5">Bức tranh bi tráng chốn quan trường</p>
             </div>
-            <p class="text-sm text-ink/70">Bức tranh lịch sử hào hùng và bi tráng, mộc mạc khắc họa chốn quan trường.</p>
+            <span class="font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Tiểu thuyết lịch sử</span>
           </li>
-          <li class="p-6 bg-paper border border-line rounded-lg">
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1.5">
-              <h4 class="font-serif text-xl">Triều Dâng</h4>
-              <span class="text-[11px] uppercase tracking-wider text-stone">Truyện dài · 2 tập</span>
+          <li class="flex items-baseline justify-between gap-6 py-5 border-b border-line">
+            <div>
+              <h3 class="font-serif text-xl">Triều Dâng</h3>
+              <p class="italic text-stone text-[15px] mt-0.5">Trường ca về tình yêu và thân phận</p>
             </div>
-            <p class="text-sm text-ink/70">Trường ca về tình yêu và thân phận con người trước những biến thiên thời đại.</p>
+            <span class="font-sans text-[11px] uppercase tracking-[0.14em] text-stone shrink-0">Truyện dài · 2 tập</span>
           </li>
         </ul>
         <a href="/#contact" data-subject="Publishing & Editorial" class="btn-primary mt-8 js-book-cta">Nhận thông báo khi sách ra mắt</a>
@@ -360,126 +314,108 @@
 </section>
 
 <!-- ===== PARTNERS ===== -->
-<section class="py-20 bg-paper border-y border-line/70" id="partners">
-  <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <p class="kicker mb-3">Đối tác</p>
-      <h2 class="font-serif text-3xl">Thương hiệu từng hợp tác</h2>
-    </div>
-    <ul class="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 text-stone">
-      <li><a href="https://emperorcruises.com" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Emperor Cruises</a></li>
-      <li><a href="https://luxurytravelvietnam.com" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Luxury Travel VN</a></li>
-      <li><a href="https://diamondbayresort.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Diamond Bay Resort</a></li>
-      <li><a href="https://lazada.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Lazada</a></li>
-      <li><a href="https://selly.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Selly.vn</a></li>
-      <li><a href="https://cafef.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">CafeF</a></li>
-      <li><a href="https://afamily.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Afamily</a></li>
-      <li><a href="https://sayweee.com" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Weee!</a></li>
-      <li><a href="https://rover.com" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Rover</a></li>
-      <li><a href="https://cooky.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Cooky.vn</a></li>
-      <li><a href="https://datviettour.com.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Đất Việt Tour</a></li>
-      <li><a href="https://eqvn.net" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">EQVN</a></li>
-      <li><a href="https://interimm.vn" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Interhome</a></li>
-      <li><a href="https://mushie.com" target="_blank" rel="noopener" class="font-serif text-lg hover:text-clay transition-colors">Mushie Studio</a></li>
-    </ul>
+<section class="py-12 lg:py-16 border-b border-line/70" id="partners">
+  <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+    <p class="kicker mb-5">Thương hiệu từng hợp tác</p>
+    <p class="font-serif text-lg lg:text-xl leading-relaxed text-stone">
+      <a href="https://emperorcruises.com" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Emperor Cruises</a> ·
+      <a href="https://luxurytravelvietnam.com" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Luxury Travel VN</a> ·
+      <a href="https://diamondbayresort.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Diamond Bay Resort</a> ·
+      <a href="https://lazada.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Lazada</a> ·
+      <a href="https://selly.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Selly.vn</a> ·
+      <a href="https://cafef.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">CafeF</a> ·
+      <a href="https://afamily.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Afamily</a> ·
+      <a href="https://sayweee.com" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Weee!</a> ·
+      <a href="https://rover.com" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Rover</a> ·
+      <a href="https://cooky.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Cooky.vn</a> ·
+      <a href="https://datviettour.com.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Đất Việt Tour</a> ·
+      <a href="https://eqvn.net" target="_blank" rel="noopener" class="hover:text-clay transition-colors">EQVN</a> ·
+      <a href="https://interimm.vn" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Interhome</a> ·
+      <a href="https://mushie.com" target="_blank" rel="noopener" class="hover:text-clay transition-colors">Mushie Studio</a>
+    </p>
   </div>
 </section>
 
 <!-- ===== BLOG ===== -->
-<section class="py-24 lg:py-32 bg-paper" id="blog">
+<section class="py-16 lg:py-24" id="blog">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+    <div class="flex items-end justify-between gap-6 mb-10">
       <div>
         <p class="kicker mb-4">Tạp chí</p>
-        <h2 class="font-serif text-4xl lg:text-5xl leading-tight">Bài viết, góc nhìn và câu chuyện thực tế</h2>
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight">Bài viết &amp; góc nhìn</h2>
       </div>
       <a href="/blog/" class="btn-ghost shrink-0">Xem tất cả <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
     </div>
-    <div class="grid md:grid-cols-3 gap-8">
-      <a href="/blog/tough-love-marketing" class="group block p-8 bg-cream rounded-lg border border-line hover:border-clay/50 transition-colors">
-        <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-5">Marketing</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4 group-hover:text-clay transition-colors">Tough Love Marketing</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">Tại sao sự thật lại quan trọng hơn doanh số tức thời? Góc nhìn về việc xây dựng giá trị thương hiệu không thỏa hiệp.</p>
-        <span class="btn-ghost text-clay">Đọc bài <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+    <div class="border-t border-line">
+      <a href="/blog/tough-love-marketing" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="hidden sm:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone w-24 shrink-0">Marketing</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Tough Love Marketing</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Tại sao sự thật quan trọng hơn doanh số tức thời?</p>
+        </div>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <a href="/blog/cau-chuyen-khoi-nghiep" class="group block p-8 bg-cream rounded-lg border border-line hover:border-clay/50 transition-colors">
-        <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-5">Hành trình</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4 group-hover:text-clay transition-colors">Câu chuyện khởi nghiệp</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">Từ những ngày đầu bước chân vào ngành báo chí đến khi trở thành một “Solopreneur” đa năng trên thị trường quốc tế.</p>
-        <span class="btn-ghost text-clay">Đọc bài <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      <a href="/blog/cau-chuyen-khoi-nghiep" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="hidden sm:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone w-24 shrink-0">Hành trình</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Câu chuyện khởi nghiệp</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Từ tòa soạn báo đến “Solopreneur” trên đất Mỹ</p>
+        </div>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
-      <a href="/blog/goc-nhin-van-hoa" class="group block p-8 bg-cream rounded-lg border border-line hover:border-clay/50 transition-colors">
-        <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-5">Văn hóa</p>
-        <h3 class="font-serif text-2xl leading-snug mb-4 group-hover:text-clay transition-colors">Góc nhìn Văn hóa</h3>
-        <p class="text-ink/70 leading-relaxed mb-8">Nơi tôi chia sẻ về những cuốn sách tâm đắc và cách văn hóa Á Đông nhào nặn nên tư duy chiến lược hiện đại.</p>
-        <span class="btn-ghost text-clay">Đọc bài <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      <a href="/blog/goc-nhin-van-hoa" class="group flex items-center gap-5 lg:gap-8 py-6 border-b border-line hover:bg-cream/60 transition-colors px-2 -mx-2">
+        <span class="hidden sm:block font-sans text-[11px] uppercase tracking-[0.14em] text-stone w-24 shrink-0">Văn hóa</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-xl lg:text-2xl group-hover:text-clay transition-colors">Góc nhìn Văn hóa</h3>
+          <p class="italic text-stone text-[15px] mt-0.5">Văn hóa Á Đông trong tư duy chiến lược hiện đại</p>
+        </div>
+        <svg class="ic text-stone group-hover:text-clay group-hover:translate-x-1 transition-all shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
       </a>
     </div>
   </div>
 </section>
 
 <!-- ===== TESTIMONIALS ===== -->
-<section class="py-24 lg:py-32 bg-cream" id="testimonials">
-  <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="text-center mb-14">
-      <p class="kicker mb-3">Tiếng nói niềm tin</p>
-      <h2 class="font-serif text-4xl lg:text-5xl">Khách hàng nói gì về hành trình Tough Love</h2>
-    </div>
-    <div class="grid md:grid-cols-3 gap-8">
-      <figure class="p-9 bg-paper rounded-lg border border-line flex flex-col">
-        <blockquote class="font-serif text-lg italic leading-relaxed text-ink/85 flex-1">“Elise không chỉ viết nội dung; cô ấy dệt nên linh hồn của thương hiệu qua từng câu chữ. Phương pháp tiếp cận ‘tình yêu nghiêm khắc’ của cô đã buộc chúng tôi phải tìm ra tiếng nói đích thực của mình.”</blockquote>
-        <figcaption class="mt-8 pt-6 border-t border-line">
-          <p class="font-semibold">Thea Vũ</p>
-          <p class="text-xs text-stone mt-1">Founder, Artisan Bloom</p>
-        </figcaption>
+<section class="py-16 lg:py-24 bg-cream" id="testimonials">
+  <div class="max-w-3xl mx-auto px-6 lg:px-8 text-center">
+    <p class="kicker mb-8">Tiếng nói niềm tin</p>
+    <figure>
+      <blockquote class="font-serif italic text-2xl lg:text-3xl leading-relaxed text-ink/90">“Elise không chỉ viết nội dung; cô ấy <span class="font-script not-italic text-clay text-[1.4em] leading-none breathe-script">dệt nên linh hồn</span> của thương hiệu qua từng câu chữ.”</blockquote>
+      <figcaption class="mt-7 text-sm text-stone">— Thea Vũ · Founder, Artisan Bloom</figcaption>
+    </figure>
+    <div class="grid sm:grid-cols-2 gap-10 mt-14 text-left">
+      <figure>
+        <blockquote class="italic text-ink/75 leading-7 text-[15px]">“Cô ấy coi trọng sự thật nguyên bản hơn là những chỉ số ảo — và điều đó thể hiện rõ qua kết quả của chúng tôi.”</blockquote>
+        <figcaption class="mt-3 text-sm text-stone">— Giang Ngô · CEO, Solitude Retreats</figcaption>
       </figure>
-      <figure class="p-9 bg-paper rounded-lg border border-line flex flex-col">
-        <blockquote class="font-serif text-lg italic leading-relaxed text-ink/85 flex-1">“Độ tỉ mỉ và tâm huyết mà Elise mang vào chiến lược Marcom thực sự hiếm có. Cô ấy coi trọng sự thật nguyên bản hơn là những chỉ số ảo, và điều đó được thể hiện rõ qua kết quả của chúng tôi.”</blockquote>
-        <figcaption class="mt-8 pt-6 border-t border-line">
-          <p class="font-semibold">Giang Ngô</p>
-          <p class="text-xs text-stone mt-1">CEO, Solitude Retreats</p>
-        </figcaption>
-      </figure>
-      <figure class="p-9 bg-paper rounded-lg border border-line flex flex-col">
-        <blockquote class="font-serif text-lg italic leading-relaxed text-ink/85 flex-1">“Một chiến lược gia xuất sắc, người thấu hiểu sự giao thoa giữa AI và dấu ấn con người. Cô ấy đã giúp chúng tôi mở rộng toàn cầu mà không đánh mất đi bản sắc cốt lõi.”</blockquote>
-        <figcaption class="mt-8 pt-6 border-t border-line">
-          <p class="font-semibold">Bình Minh</p>
-          <p class="text-xs text-stone mt-1">Giám đốc Sáng tạo, Heritage Co.</p>
-        </figcaption>
+      <figure>
+        <blockquote class="italic text-ink/75 leading-7 text-[15px]">“Người thấu hiểu sự giao thoa giữa AI và dấu ấn con người — giúp chúng tôi mở rộng toàn cầu mà không mất bản sắc.”</blockquote>
+        <figcaption class="mt-3 text-sm text-stone">— Bình Minh · Giám đốc Sáng tạo, Heritage Co.</figcaption>
       </figure>
     </div>
   </div>
 </section>
 
 <!-- ===== CONTACT ===== -->
-<section class="py-24 lg:py-32 bg-paper" id="contact">
+<section class="py-16 lg:py-24" id="contact">
   <div class="max-w-site mx-auto px-6 lg:px-8">
-    <div class="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-      <div class="lg:pt-4">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+      <div class="lg:pt-2">
         <p class="kicker mb-4">Liên hệ</p>
-        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-6">Bắt đầu một cuộc trò chuyện nghiêm túc</h2>
-        <p class="text-ink/75 text-lg leading-relaxed mb-12">Mọi trao đổi tư vấn đều được giữ kín tuyệt đối. Gửi yêu cầu để đặt một buổi trao đổi riêng, hoặc để tôi rà soát lại thế trận chiến lược hiện tại của bạn.</p>
-        <ul class="space-y-7">
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-5">Bắt đầu một cuộc trò chuyện <em class="text-clay">nghiêm túc</em></h2>
+        <p class="text-ink/80 leading-8 text-[17px] mb-10 max-w-md">Mọi trao đổi tư vấn đều được giữ kín tuyệt đối. Gửi yêu cầu để đặt một buổi trao đổi riêng — bắt đầu từ sự thật của thương hiệu bạn.</p>
+        <ul class="space-y-6">
           <li class="flex items-center gap-5">
-            <span class="w-11 h-11 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 2Z"/></svg></span>
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-0.5">Điện thoại</p>
-              <a href="tel:+18323775317" class="text-lg hover:text-clay transition-colors">+1 (832) 377-5317</a>
-            </div>
+            <span class="w-10 h-10 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 2Z"/></svg></span>
+            <a href="tel:+18323775317" class="hover:text-clay transition-colors">+1 (832) 377-5317</a>
           </li>
           <li class="flex items-center gap-5">
-            <span class="w-11 h-11 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-0.5">Email</p>
-              <a href="mailto:elisehanhnguyenus@gmail.com" class="text-lg hover:text-clay transition-colors">elisehanhnguyenus@gmail.com</a>
-            </div>
+            <span class="w-10 h-10 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
+            <a href="mailto:elisehanhnguyenus@gmail.com" class="hover:text-clay transition-colors">elisehanhnguyenus@gmail.com</a>
           </li>
           <li class="flex items-center gap-5">
-            <span class="w-11 h-11 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.2em] text-stone mb-0.5">Văn phòng</p>
-              <p class="text-lg">Pearland, Texas, USA 77584</p>
-            </div>
+            <span class="w-10 h-10 bg-cream border border-line rounded-lg flex items-center justify-center shrink-0"><svg class="ic text-clay text-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <span>Pearland, Texas, USA 77584</span>
           </li>
         </ul>
       </div>
@@ -488,21 +424,21 @@
         <form id="leadForm" class="space-y-5" novalidate>
           <div class="grid md:grid-cols-2 gap-5">
             <div>
-              <label for="fullName" class="block text-xs font-medium text-stone mb-1.5">Họ và tên *</label>
+              <label for="fullName" class="block font-sans text-xs font-medium text-stone mb-1.5">Họ và tên *</label>
               <input id="fullName" required class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition" type="text" autocomplete="name"/>
             </div>
             <div>
-              <label for="company" class="block text-xs font-medium text-stone mb-1.5">Công ty</label>
+              <label for="company" class="block font-sans text-xs font-medium text-stone mb-1.5">Công ty</label>
               <input id="company" class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition" type="text" autocomplete="organization"/>
             </div>
           </div>
           <div class="grid md:grid-cols-2 gap-5">
             <div>
-              <label for="email" class="block text-xs font-medium text-stone mb-1.5">Email *</label>
+              <label for="email" class="block font-sans text-xs font-medium text-stone mb-1.5">Email *</label>
               <input id="email" required class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition" type="email" autocomplete="email"/>
             </div>
             <div>
-              <label for="subject" class="block text-xs font-medium text-stone mb-1.5">Chủ đề</label>
+              <label for="subject" class="block font-sans text-xs font-medium text-stone mb-1.5">Chủ đề</label>
               <select id="subject" class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition">
                 <option>Strategic Brand Advisory</option>
                 <option>Copywriting & Narrative</option>
@@ -513,16 +449,16 @@
             </div>
           </div>
           <div>
-            <label for="message" class="block text-xs font-medium text-stone mb-1.5">Nội dung *</label>
+            <label for="message" class="block font-sans text-xs font-medium text-stone mb-1.5">Nội dung *</label>
             <textarea id="message" required rows="3" class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition resize-none"></textarea>
           </div>
           <div class="grid md:grid-cols-2 gap-5">
             <div>
-              <label for="portfolioLink" class="block text-xs font-medium text-stone mb-1.5">Link tài liệu (tùy chọn)</label>
+              <label for="portfolioLink" class="block font-sans text-xs font-medium text-stone mb-1.5">Link tài liệu (tùy chọn)</label>
               <input id="portfolioLink" type="url" placeholder="Drive / Portfolio…" class="w-full bg-paper border border-line rounded-md px-4 py-3 text-sm focus:outline-none focus:border-clay/60 focus:ring-1 focus:ring-clay/30 transition"/>
             </div>
             <div>
-              <span class="block text-xs font-medium text-stone mb-1.5">Tệp đính kèm (tùy chọn, ≤ 4MB)</span>
+              <span class="block font-sans text-xs font-medium text-stone mb-1.5">Tệp đính kèm (tùy chọn, ≤ 4MB)</span>
               <label class="relative flex items-center justify-center gap-2 w-full bg-paper border border-dashed border-line rounded-md px-4 py-3 text-sm text-stone cursor-pointer hover:border-clay/60 transition">
                 <input id="attachment" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.doc,.docx,.jpg,.png"/>
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0 4 4m-4-4-4 4"/><path d="M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3"/></svg>
@@ -532,8 +468,8 @@
           </div>
           <div class="pt-1">
             <button id="submitBtn" type="submit" class="btn-primary w-full">Gửi yêu cầu tư vấn</button>
-            <p id="formStatus" class="mt-3 text-sm text-center" hidden></p>
-            <p class="mt-4 text-[11px] text-stone text-center">Thông tin của bạn được xử lý theo <a href="/privacy" class="underline hover:text-clay">Chính sách bảo mật</a>.</p>
+            <p id="formStatus" class="mt-3 text-sm text-center font-sans" hidden></p>
+            <p class="mt-4 font-sans text-[11px] text-stone text-center">Thông tin của bạn được xử lý theo <a href="/privacy" class="underline hover:text-clay">Chính sách bảo mật</a>.</p>
           </div>
         </form>
       </div>
@@ -543,16 +479,13 @@
 </main>
 
 <!-- ===== FOOTER ===== -->
-<footer class="bg-espresso text-paper/70 py-16">
-  <div class="max-w-site mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
+<footer class="bg-espresso text-paper/70 py-14">
+  <div class="max-w-site mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-8">
     <div class="text-center md:text-left">
-      <div class="flex items-center gap-3 justify-center md:justify-start mb-3">
-        <img src="/assets/images/opt/logo.png" alt="" class="h-8 w-8 object-contain opacity-80"/>
-        <span class="font-serif text-lg text-paper">Elise H. Nguyễn</span>
-      </div>
-      <p class="text-xs tracking-widest uppercase text-paper/40">© <span id="year">2026</span> Elise H. Nguyễn · Built to last.</p>
+      <p class="font-script text-4xl text-paper/90 mb-2">Elise Hạnh Nguyễn</p>
+      <p class="font-sans text-[11px] tracking-widest uppercase text-paper/40">© <span id="year">2026</span> · Built to last.</p>
     </div>
-    <nav class="flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs uppercase tracking-widest" aria-label="Liên kết footer">
+    <nav class="flex flex-wrap justify-center gap-x-7 gap-y-3 font-sans text-sm" aria-label="Liên kết footer">
       <a class="hover:text-paper transition-colors" href="/privacy">Chính sách bảo mật</a>
       <a class="hover:text-paper transition-colors" href="https://www.linkedin.com/in/elisehanhnguyen/" target="_blank" rel="noopener">LinkedIn</a>
       <a class="hover:text-paper transition-colors" href="https://www.facebook.com/nudoanhnhanelise" target="_blank" rel="noopener">Facebook</a>
@@ -563,7 +496,7 @@
 
 <!-- ===== CHATBOT ===== -->
 <div id="chatbot-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
-  <div id="chat-window" class="hidden w-[380px] max-w-[90vw] mb-4 bg-paper rounded-xl shadow-2xl border border-line flex-col overflow-hidden h-[600px] max-h-[85vh] relative">
+  <div id="chat-window" class="hidden w-[380px] max-w-[90vw] mb-4 bg-paper rounded-xl shadow-2xl border border-line flex-col overflow-hidden h-[600px] max-h-[85vh] relative font-sans">
     <div class="bg-clay text-paper p-5 flex justify-between items-center">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-paper/20 rounded-full flex items-center justify-center"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></div>
@@ -712,7 +645,6 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
     toggle: document.getElementById('chat-toggle'),
     window: document.getElementById('chat-window'),
     close: document.getElementById('close-chat'),
-    icon: document.getElementById('chat-icon'),
     form: document.getElementById('chat-form'),
     input: document.getElementById('chat-input'),
     messages: document.getElementById('chat-messages'),
@@ -919,7 +851,7 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
       btn.disabled = true;
       btn.textContent = 'Đang gửi…';
       status.hidden = false;
-      status.className = 'mt-3 text-sm text-center text-stone';
+      status.className = 'mt-3 text-sm text-center font-sans text-stone';
       status.textContent = 'Đang gửi thông tin…';
 
       // 1) Google Sheets (kèm lịch sử chat nếu có) — fire and forget
@@ -943,12 +875,12 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
           body: JSON.stringify({ fullName: fullName, company: company, email: email, subject: subject, message: message, portfolioLink: portfolioLink, attachment: attachment })
         });
         if (!res.ok) throw new Error('leads failed');
-        status.className = 'mt-3 text-sm text-center text-clay font-medium';
+        status.className = 'mt-3 text-sm text-center font-sans text-clay font-medium';
         status.textContent = 'Đã gửi thành công! Elise sẽ phản hồi bạn qua email trong 1–2 ngày làm việc.';
         contactForm.reset();
         if (fileNameDisplay) { fileNameDisplay.textContent = 'PDF, DOCX, JPG, PNG'; fileNameDisplay.classList.remove('text-clay'); }
       } catch (err) {
-        status.className = 'mt-3 text-sm text-center text-red-700';
+        status.className = 'mt-3 text-sm text-center font-sans text-red-700';
         status.textContent = 'Chưa gửi được. Bạn vui lòng thử lại, hoặc email trực tiếp: elisehanhnguyenus@gmail.com';
       } finally {
         btn.disabled = false;
