@@ -1,0 +1,10 @@
+# File nguon — chi dung khi phat trien, khong can tren server
+src/
+scripts/
+
+# Anh goc chua nen — ban dung tren web nam o assets/images/opt/
+assets/images/*.jpg
+assets/images/*.png
+
+# Cau hinh build
+tailwind.config.js
