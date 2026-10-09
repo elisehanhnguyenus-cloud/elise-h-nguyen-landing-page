@@ -1,10 +1,15 @@
 # File nguon — chi dung khi phat trien, khong can tren server
 src/
 scripts/
+tailwind.config.js
 
 # Anh goc chua nen — ban dung tren web nam o assets/images/opt/
 assets/images/*.jpg
 assets/images/*.png
 
-# Cau hinh build
-tailwind.config.js
+# Tai lieu & ma nguon noi bo — KHONG duoc phuc vu cong khai
+gas-warehouse/
+kat_chatbot_training.md
+README.md
+screenshot.png
+package-lock.json

@@ -422,6 +422,9 @@
 
       <div class="bg-cream border border-line p-8 md:p-10 rounded-lg">
         <form id="leadForm" class="space-y-5" novalidate>
+          <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+            <label>Website <input id="hpWebsite" name="website" type="text" tabindex="-1" autocomplete="off"/></label>
+          </div>
           <div class="grid md:grid-cols-2 gap-5">
             <div>
               <label for="fullName" class="block font-sans text-xs font-medium text-stone mb-1.5">Họ và tên *</label>
@@ -684,8 +687,8 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
         _chatHistoryText = '[Bat dau phien] ' + new Date().toLocaleString('vi-VN') + ' — Khach ' + name + ' (' + email + ') vao phong tu van Kat.';
         setTimeout(function () { sendLeadToGoogleSheets({ name: name, phone: '', email: email }, _chatHistoryText); }, 50);
       }
-      var welcomeMsg = 'Xin chào <strong>' + name + '</strong>! Em là Kat — Concierge Advisor của chị Elise.\n\nEm đã lưu thông tin liên hệ của anh/chị. Để em hỗ trợ tốt nhất, anh/chị đang cần tư vấn về lĩnh vực nào?'
-        + '<br><br>[BTN:Chiến lược thương hiệu][BTN:AI Automation][BTN:Mentoring Cá nhân][BTN:Đặt lịch Call 1:1]';
+      var welcomeMsg = 'Xin chào **' + name + '**! Em là Kat — Concierge Advisor của chị Elise.\n\nEm đã lưu thông tin liên hệ của anh/chị. Để em hỗ trợ tốt nhất, anh/chị đang cần tư vấn về lĩnh vực nào?'
+        + '\n\n[BTN:Chiến lược thương hiệu][BTN:AI Automation][BTN:Mentoring Cá nhân][BTN:Đặt lịch Call 1:1]';
       setTimeout(function () { addBubble(welcomeMsg, false); }, 300);
       if (refs.input) refs.input.focus();
     });
@@ -694,8 +697,13 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
   refs.toggle.addEventListener('click', toggleChat);
   if (refs.close) refs.close.addEventListener('click', toggleChat);
 
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   function formatContent(html) {
     if (!html) return '';
+    html = escapeHtml(html);
     html = html.replace(/\[SAVE_TO_NOTION:.*?\]/g, '');
     html = html.replace(/\|\|LEAD_DATA:\s*\{.*?\}\s*\|\|/g, '');
     html = html.replace(/\[DETAILS:(.*?)\](.*?)\[\/DETAILS\]/gs, (match, title, content) => {
@@ -872,16 +880,20 @@ async function sendLeadToGoogleSheets(leadData, chatHistoryText, extraFields) {
         var res = await fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName: fullName, company: company, email: email, subject: subject, message: message, portfolioLink: portfolioLink, attachment: attachment })
+          body: JSON.stringify({ fullName: fullName, company: company, email: email, subject: subject, message: message, portfolioLink: portfolioLink, attachment: attachment, website: (document.getElementById('hpWebsite') || {}).value || '' })
         });
-        if (!res.ok) throw new Error('leads failed');
+        if (!res.ok) {
+          var errBody = null;
+          try { errBody = await res.json(); } catch (e2) {}
+          throw new Error((errBody && errBody.message) || 'leads failed');
+        }
         status.className = 'mt-3 text-sm text-center font-sans text-clay font-medium';
         status.textContent = 'Đã gửi thành công! Elise sẽ phản hồi bạn qua email trong 1–2 ngày làm việc.';
         contactForm.reset();
         if (fileNameDisplay) { fileNameDisplay.textContent = 'PDF, DOCX, JPG, PNG'; fileNameDisplay.classList.remove('text-clay'); }
       } catch (err) {
         status.className = 'mt-3 text-sm text-center font-sans text-red-700';
-        status.textContent = 'Chưa gửi được. Bạn vui lòng thử lại, hoặc email trực tiếp: elisehanhnguyenus@gmail.com';
+        status.textContent = (err && err.message && err.message !== 'leads failed') ? err.message : 'Chưa gửi được. Bạn vui lòng thử lại, hoặc email trực tiếp: elisehanhnguyenus@gmail.com';
       } finally {
         btn.disabled = false;
         btn.textContent = 'Gửi yêu cầu tư vấn';
