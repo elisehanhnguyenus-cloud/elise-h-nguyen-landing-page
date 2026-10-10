@@ -1,4 +1,5 @@
 import { put } from '@vercel/blob';
+import { isAllowedOrigin, rateLimiter, firstForwardedIp } from './_guard.js';
 
 // ============================================================
 // /api/leads — nhận form liên hệ → Notion (+ file đính kèm → Vercel Blob)
@@ -9,40 +10,18 @@ import { put } from '@vercel/blob';
 const DATABASE_ID = process.env.NOTION_DATABASE_ID || '3308ed608af9804c8401c5599ef4f556';
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_EXT = { pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png' };
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const RATE_MAX = 5;
-const SUBJECT_OPTIONS = ['Consulting', 'AI Automation', 'Storytelling', 'Other'];
+const isRateLimited = rateLimiter('leads', 5, 10 * 60 * 1000);
 
-// Giới hạn tần suất theo IP. Lưu trong bộ nhớ của instance nên chỉ là lớp chắn
-// "tốt-hơn-không" (mỗi instance đếm riêng, reset khi instance tắt).
-const buckets = globalThis.__leadsRate || (globalThis.__leadsRate = new Map());
-function isRateLimited(ip) {
-  const now = Date.now();
-  const hits = (buckets.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  hits.push(now);
-  buckets.set(ip, hits);
-  if (buckets.size > 5000) buckets.clear();
-  return hits.length > RATE_MAX;
-}
-
-function clientIp(req) {
-  const xf = req.headers['x-forwarded-for'];
-  return (typeof xf === 'string' && xf.split(',')[0].trim()) || req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
-}
-
-// Chỉ chấp nhận request phát ra từ chính website này (chặn site khác nhúng/curl spam).
-function isSameOrigin(req) {
-  const host = req.headers.host;
-  const extra = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
-  const src = req.headers.origin || req.headers.referer;
-  if (!src) return false;
-  try {
-    const h = new URL(src).host;
-    return h === host || extra.includes(h);
-  } catch {
-    return false;
-  }
-}
+// Chủ đề trên form → option có sẵn trong cột Subject của Notion. Giữ danh sách cố định:
+// Notion tự tạo option mới khi gặp tên lạ, nên không bao giờ ghi thẳng chuỗi khách gửi.
+// Chủ đề gốc vẫn được ghi đầy đủ ở đầu cột Message.
+const SUBJECT_MAP = {
+  'Strategic Brand Advisory': 'Consulting',
+  'Copywriting & Narrative': 'Storytelling',
+  'Publishing & Editorial': 'Storytelling',
+  'Call Request': 'Consulting',
+  'Booking & Appointment': 'Consulting',
+};
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -51,10 +30,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
-  if (!isSameOrigin(req)) {
+  if (!isAllowedOrigin(req.headers.host, req.headers.origin || req.headers.referer)) {
     return res.status(403).json({ success: false, message: 'Forbidden' });
   }
-  if (isRateLimited(clientIp(req))) {
+  const ip = firstForwardedIp(req.headers['x-forwarded-for']) || req.headers['x-real-ip'] || 'unknown';
+  if (isRateLimited(ip)) {
     return res.status(429).json({ success: false, message: 'Bạn gửi quá nhanh, vui lòng thử lại sau ít phút.' });
   }
 
@@ -122,7 +102,7 @@ export default async function handler(req, res) {
       'Name': { title: [{ text: { content: fullName } }] },
       'Email': { email: email },
       'Company': { rich_text: [{ text: { content: company } }] },
-      'Subject': { select: { name: SUBJECT_OPTIONS.includes(subject) ? subject : 'Other' } },
+      'Subject': { select: { name: SUBJECT_MAP[subject] || 'Other' } },
       'Message': { rich_text: [{ text: { content: `[${subject || 'Contact Form'}] ${message}${extraContext}`.substring(0, 1990) } }] },
     };
 

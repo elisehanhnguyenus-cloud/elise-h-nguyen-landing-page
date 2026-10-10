@@ -1,3 +1,5 @@
+import { isAllowedOrigin, rateLimiter, firstForwardedIp } from './_guard.js';
+
 export const config = {
   runtime: 'edge',
 };
@@ -12,41 +14,18 @@ const AI_MODEL = process.env.AI_MODEL || 'ces-chatbot-gpt-5.4';
 
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_HISTORY_MESSAGES = 20;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const RATE_MAX = 40; // tin nhắn / IP / 10 phút
-
-// Giới hạn tần suất theo IP — lưu trong bộ nhớ của edge isolate, chỉ là lớp chắn "tốt-hơn-không".
-const buckets = globalThis.__chatRate || (globalThis.__chatRate = new Map());
-function isRateLimited(ip) {
-  const now = Date.now();
-  const hits = (buckets.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  hits.push(now);
-  buckets.set(ip, hits);
-  if (buckets.size > 5000) buckets.clear();
-  return hits.length > RATE_MAX;
-}
-
-// Chỉ phục vụ request phát ra từ chính website này — site khác không thể nhúng để đốt credit AI.
-function isSameOrigin(req) {
-  const host = req.headers.get('host');
-  const extra = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
-  const src = req.headers.get('origin') || req.headers.get('referer');
-  if (!src) return false;
-  try {
-    const h = new URL(src).host;
-    return h === host || extra.includes(h);
-  } catch {
-    return false;
-  }
-}
+const MAX_HISTORY_CHARS = 12000;
+const isRateLimited = rateLimiter('chat', 40, 10 * 60 * 1000);
 
 const json = (obj, status) => new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
 
 export default async function handler(req) {
   if (req.method !== 'POST') return json({ message: 'Method not allowed' }, 405);
-  if (!isSameOrigin(req)) return json({ error: 'Forbidden' }, 403);
+  if (!isAllowedOrigin(req.headers.get('host'), req.headers.get('origin') || req.headers.get('referer'))) {
+    return json({ error: 'Forbidden' }, 403);
+  }
 
-  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown';
+  const ip = firstForwardedIp(req.headers.get('x-forwarded-for')) || req.headers.get('x-real-ip') || 'unknown';
   if (isRateLimited(ip)) return json({ error: 'Too many requests' }, 429);
 
   const apiKey = process.env.AI_API_KEY;
@@ -61,14 +40,19 @@ export default async function handler(req) {
     if (typeof message !== 'string' || message.length === 0 || message.length > MAX_MESSAGE_CHARS) {
       return json({ error: 'Invalid message' }, 400);
     }
+    // Giữ các tin gần nhất trong giới hạn tổng ký tự.
+    let budget = MAX_HISTORY_CHARS;
     const safeHistory = (Array.isArray(history) ? history : [])
       .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
       .slice(-MAX_HISTORY_MESSAGES)
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }))
+      .reverse()
+      .filter((m) => (budget -= m.content.length) >= 0)
+      .reverse();
 
-    const userInfo = lead && typeof lead === 'object'
-      ? `\nBỐI CẢNH KHÁCH HÀNG: ${JSON.stringify({ name: lead.name, email: lead.email }).slice(0, 500)}`
-      : '';
+    // Chỉ gửi tên gọi cho nhà cung cấp AI — email khách không cần cho việc tư vấn.
+    const firstName = lead && typeof lead.name === 'string' ? lead.name.trim().split(/\s+/).pop().slice(0, 40) : '';
+    const userInfo = firstName ? `\nTÊN GỌI KHÁCH: ${firstName}` : '';
 
     const systemPrompt = `BẠN LÀ KAT - TRỢ LÝ CONCIERGE ADVISOR của Elise Hạnh Nguyễn.
 DNA: Sang trọng, thâm thúy, xưng "Kat" gọi "Bạn". Tư duy "Less is More" - ngắn gọn nhưng sắc sảo.
@@ -93,7 +77,7 @@ QUY TẮC TRUNG THỰC (QUAN TRỌNG NHẤT):
 
 QUY TẮC UI/UX:
 - Thông tin dài: Sử dụng [DETAILS:Tiêu đề]Nội dung chi tiết[/DETAILS] để khách tự mở xem.
-- Nút bấm: Luôn kèm [BTN:Đặt lịch tư vấn 1:1] hoặc [BTN:Gửi yêu cầu chi tiết] ở cuối các phản hồi (đặc biệt từ bước 3).
+- Nút bấm: Luôn kèm [BTN:Yêu cầu tư vấn 1:1] hoặc [BTN:Gửi yêu cầu chi tiết] ở cuối các phản hồi (đặc biệt từ bước 3). Không dùng chữ "Đặt lịch" vì website không có hệ thống đặt lịch tự động.
 - KHÔNG LẶP LẠI CÂU HỎI ĐÃ CÓ TRONG LỊCH SỬ.
 - Chỉ dùng văn bản thuần và các thẻ [BTN:], [DETAILS:], **đậm**, ### tiêu đề, - gạch đầu dòng. KHÔNG xuất thẻ HTML.
 
